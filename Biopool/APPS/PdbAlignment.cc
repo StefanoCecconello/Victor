@@ -15,7 +15,8 @@ using namespace Victor::Biopool;
  * 
  */
 int main(int argc, char** argv) {
-    Rotator* aaa=new KabschMethod;
+    Rotator* rotator=new KabschMethod;
+    
     return 0;
 }
 

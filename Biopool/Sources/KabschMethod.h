@@ -10,9 +10,7 @@ namespace Victor {
         class KabschMethod:public Rotator{
         public:
 
-            // CONSTRUCTORS:
-
-            /// Constructor.
+            // CONSTRUCTORS/DESTRUCTOR:
             KabschMethod();
             
             void rotate();
