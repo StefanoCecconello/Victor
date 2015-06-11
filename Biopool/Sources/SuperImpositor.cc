@@ -30,7 +30,13 @@ SuperImpositor::~SuperImpositor() {
 }
 
 double SuperImpositor::calculateRMSD(){
-    rotationAlgorith->rotate(set1,set2);
+    
+    
+    
+    
+    Eigen::Affine3d* rotoTraslation=rotationAlgorith->rotate(set1,set2);
+    rotoTraslation->linear();
+    rotoTraslation->translation();
     return 0;
 }
 

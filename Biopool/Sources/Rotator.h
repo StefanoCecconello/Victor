@@ -13,7 +13,7 @@ namespace Victor {
             Rotator();
 
             // PREDICATES:
-            virtual double rotate(Spacer* set1, Spacer* set2) = 0;
+            virtual Eigen::Affine3d* rotate(Spacer* set1, Spacer* set2) = 0;
 
         
 

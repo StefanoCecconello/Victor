@@ -9,12 +9,12 @@ using namespace Victor::Biopool;
 KabschMethod::KabschMethod() {
 }
 
-double KabschMethod::rotate(Spacer* set1, Spacer* set2) {
-    Eigen::Affine3d output;
-    //Matrice di rotazione
-    output.linear() = Eigen::Matrix3d::Identity(3, 3);
-    //Vettore di traslazione
-    output.translation() = Eigen::Vector3d::Zero();
+Eigen::Affine3d* KabschMethod::rotate(Spacer* set1, Spacer* set2) {
+    Eigen::Affine3d* output=new Eigen::Affine3d();
+    //Rotation Matrix
+    output->linear() = Eigen::Matrix3d::Identity(3, 3);
+    //Translation Vector
+    output->translation() = Eigen::Vector3d::Zero();
     int NumAmino1 = set1->sizeAmino();
     int NumAmino2 = set2->sizeAmino();
     Atom CAAtoms1[NumAmino1];
@@ -70,7 +70,7 @@ double KabschMethod::rotate(Spacer* set1, Spacer* set2) {
 
     //Restituisce l'output cosi' come' se non vi e' nessuna rotazione o traslazione da compiere
     if (dist_in <= 0 || dist_out <= 0)
-        return 0; //MODIFICATO
+        return output;
 
     double scale = dist_out / dist_in;
     set2Matrix /= scale;
@@ -108,9 +108,10 @@ double KabschMethod::rotate(Spacer* set1, Spacer* set2) {
     Eigen::Matrix3d rotationMatrix = svd.matrixV() * I * svd.matrixU().transpose();
 
     //Ritorna la matrice di rotazione e il vettore di traslazione trovati
-    output.linear() = scale * rotationMatrix;
+    output->linear() = scale * rotationMatrix;
     //Il vettore si calcola facendo la differenza tra il primo set rotato e il secondo
-    output.translation() = scale * (out_ctr - rotationMatrix * in_ctr);
-    return 0;
+
+    output->translation() = scale * (out_ctr - rotationMatrix * in_ctr);
+    return output;
 }
 
