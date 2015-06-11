@@ -27,7 +27,7 @@ INC_PATH = -I.   -I../../tools -I Eigen
 #
  
 
-SOURCES = Identity.cc SimpleBond.cc Bond.cc KabschMethod.cc Rotator.cc \
+SOURCES = Identity.cc SimpleBond.cc Bond.cc KabschMethod.cc Rotator.cc SuperImpositor.cc \
  Component.cc Monomer.cc Polymer.cc Atom.cc Group.cc SideChain.cc \
  AminoAcid.cc Spacer.cc IntSaver.cc IntLoader.cc SeqSaver.cc PdbLoader.cc \
  PdbSaver.cc SeqLoader.cc IntCoordConverter.cc SeqConstructor.cc Ligand.cc \
@@ -35,7 +35,7 @@ SOURCES = Identity.cc SimpleBond.cc Bond.cc KabschMethod.cc Rotator.cc \
  RelLoader.cc XyzSaver.cc RelSaver.cc XyzLoader.cc
 
 
-OBJECTS = Identity.o SimpleBond.o Bond.o KabschMethod.o Rotator.o \
+OBJECTS = Identity.o SimpleBond.o Bond.o KabschMethod.o Rotator.o SuperImpositor.o \
  Component.o Monomer.o Polymer.o Atom.o Group.o SideChain.o \
  AminoAcid.o Spacer.o IntSaver.o IntLoader.o \
  SeqSaver.o PdbLoader.o PdbSaver.o SeqLoader.o \

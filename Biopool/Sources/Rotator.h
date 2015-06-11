@@ -2,7 +2,7 @@
 #define ROTATOR_H
 
 #include <Eigen/Geometry>
-
+#include <Spacer.h>
 
 namespace Victor {
     namespace Biopool {
@@ -11,15 +11,12 @@ namespace Victor {
         public:
             // CONSTRUCTORS/DESTRUCTOR:
             Rotator();
-            
+
             // PREDICATES:
-            virtual void rotate()=0;
-            
-        private:
-            // ATTRIBUTES:
-            int set1;
-            int set2;
-            
+            virtual double rotate(Spacer* set1, Spacer* set2) = 0;
+
+        
+
         };
 
     }

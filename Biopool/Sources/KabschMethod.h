@@ -13,7 +13,7 @@ namespace Victor {
             // CONSTRUCTORS/DESTRUCTOR:
             KabschMethod();
             
-            void rotate();
+            double rotate(Spacer* set1, Spacer* set2);
 
         };
 
