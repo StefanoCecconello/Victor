@@ -36,8 +36,8 @@ int main(int argc, char** argv) {
     prot1->load(pl1);
     prot2->load(pl2);
 
-    SuperImpositor* aaa = new SuperImpositor(prot1, prot2, "");
-
-    return 51;
+    SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, "");
+    superImpositor->calculateRMSD();
+    return 0;
 }
 

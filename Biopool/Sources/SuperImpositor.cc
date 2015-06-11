@@ -30,7 +30,7 @@ SuperImpositor::~SuperImpositor() {
 }
 
 double SuperImpositor::calculateRMSD(){
-    //return rotationAlgorith->rotate(set1,set2);
+    rotationAlgorith->rotate(set1,set2);
     return 0;
 }
 
