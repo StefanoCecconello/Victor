@@ -1,5 +1,5 @@
 #include <KabschMethod.h>
-//#include "Eigen/Geometry"
+#include "Eigen/Geometry"
 
 using namespace Victor;
 using namespace Victor::Biopool;
@@ -9,48 +9,17 @@ using namespace Victor::Biopool;
 KabschMethod::KabschMethod() {
 }
 
-Eigen::Affine3d* KabschMethod::rotate(Spacer* set1, Spacer* set2) {
-    Eigen::Affine3d* output=new Eigen::Affine3d();
+Eigen::Affine3d* KabschMethod::rotate(Eigen::Matrix3Xd set1Matrix, Eigen::Matrix3Xd set2Matrix) {
+    Eigen::Affine3d* output = new Eigen::Affine3d();
     //Rotation Matrix
     output->linear() = Eigen::Matrix3d::Identity(3, 3);
     //Translation Vector
     output->translation() = Eigen::Vector3d::Zero();
-    int NumAmino1 = set1->sizeAmino();
-    int NumAmino2 = set2->sizeAmino();
-    Atom CAAtoms1[NumAmino1];
-    Atom CAAtoms2[NumAmino2];
-    Eigen::Matrix3Xd set1Matrix(3, NumAmino1);
-    Eigen::Matrix3Xd set2Matrix(3, NumAmino2);
-
-    for (int i = 0; i < NumAmino1; i++) {
-        CAAtoms1[i] = set1->getAmino(i)[CA];
-    }
-
-    for (int i = 0; i < NumAmino2; i++) {
-        CAAtoms2[i] = set2->getAmino(i)[CA];
-    }
-
-    for (int col = 0; col < NumAmino1; col++) {
-        vgVector3<double> coords = CAAtoms1[col].getCoords();
-        set1Matrix(0, col) = coords[0];
-        set1Matrix(1, col) = coords[1];
-        set1Matrix(2, col) = coords[2];
-    }
-
-    for (int col = 0; col < NumAmino2; col++) {
-        vgVector3<double> coords = CAAtoms2[col].getCoords();
-        set2Matrix(0, col) = coords[0];
-        set2Matrix(1, col) = coords[1];
-        set2Matrix(2, col) = coords[2];
-    }
 
 
-    //    //Questi sono i valori di ritorno, che includono la matrice di rotazione e il vettore di traslazione
-    //    Eigen::Affine3d output;
-    //    //Matrice di rotazione
-    //    output.linear() = Eigen::Matrix3d::Identity(3, 3);
-    //    //Vettore di traslazione
-    //    output.translation() = Eigen::Vector3d::Zero();
+
+    //Questi sono i valori di ritorno, che includono la matrice di rotazione e il vettore di traslazione
+
 
     //Controlla che i due set abbiano uguale lunghezza
     if (set1Matrix.cols() != set2Matrix.cols())
@@ -72,8 +41,8 @@ Eigen::Affine3d* KabschMethod::rotate(Spacer* set1, Spacer* set2) {
     if (dist_in <= 0 || dist_out <= 0)
         return output;
 
-    double scale = dist_out / dist_in;
-    set2Matrix /= scale;
+    //double scale = dist_out / dist_in;
+    //set2Matrix /= scale;
 
     // Find the centroids then shift to the origin
     Eigen::Vector3d in_ctr = Eigen::Vector3d::Zero();
@@ -108,10 +77,12 @@ Eigen::Affine3d* KabschMethod::rotate(Spacer* set1, Spacer* set2) {
     Eigen::Matrix3d rotationMatrix = svd.matrixV() * I * svd.matrixU().transpose();
 
     //Ritorna la matrice di rotazione e il vettore di traslazione trovati
-    output->linear() = scale * rotationMatrix;
+    //output->linear() = scale * rotationMatrix;
+    output->linear() = rotationMatrix;
     //Il vettore si calcola facendo la differenza tra il primo set rotato e il secondo
 
-    output->translation() = scale * (out_ctr - rotationMatrix * in_ctr);
+    //output->translation() = scale * (out_ctr - rotationMatrix * in_ctr);
+    output->translation() = out_ctr - rotationMatrix * in_ctr;
     return output;
 }
 

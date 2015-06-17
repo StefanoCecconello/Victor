@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <SuperImpositor.h>
 #include <PdbLoader.h>
+#include <PdbSaver.h>
 #include <iostream>
 
 using namespace std;
@@ -38,6 +39,18 @@ int main(int argc, char** argv) {
 
     SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, "");
     superImpositor->calculateRMSD();
+
+    Spacer* newSet1 = superImpositor->getSet1();
+    Spacer* newSet2 = superImpositor->getSet2();
+    string proteineOUTPUT1 = "/home/cecco/Desktop/TestBIO2/output1.pdb";
+    string proteineOUTPUT2 = "/home/cecco/Desktop/TestBIO2/output2.pdb";
+    ofstream outFile1(proteineOUTPUT1.c_str());
+    ofstream outFile2(proteineOUTPUT2.c_str());
+
+    PdbSaver saveSet1(outFile1);
+    PdbSaver saveSet2(outFile2);
+    saveSet1.saveSpacer(*(newSet1));
+    saveSet2.saveSpacer(*(newSet2));
     return 0;
 }
 

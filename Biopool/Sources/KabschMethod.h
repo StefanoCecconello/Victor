@@ -13,7 +13,7 @@ namespace Victor {
             // CONSTRUCTORS/DESTRUCTOR:
             KabschMethod();
             
-            Eigen::Affine3d* rotate(Spacer* set1, Spacer* set2);
+            Eigen::Affine3d* rotate(Eigen::Matrix3Xd set1Matrix, Eigen::Matrix3Xd set2Matrix);
 
         };
 

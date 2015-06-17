@@ -30,8 +30,20 @@ namespace Victor {
             // PREDICATES:
             double calculateRMSD();
 
-        private:
 
+            Spacer* getSet2() const;
+            Spacer* getSet1() const;
+
+        private:
+            
+            // PREDICATES:
+            void rotationApplication(Eigen::Matrix3Xd R);
+            void translationApplication(Eigen::Vector3d S);
+            Eigen::Matrix3Xd fromSpacerToMatrix3Xd(Spacer spacerSet) const;
+            vgMatrix3<double> fromMatrix3XdTovgMatrix3(Eigen::Matrix3Xd matrix3Xd) const;
+            vgVector3<double> fromVector3dTovgVector3(Eigen::Vector3d Vector3d) const;
+            
+            
             // ATTRIBUTES:
             // This is the rotation algorithm chose for this superImpositor
             Rotator* rotationAlgorith;
