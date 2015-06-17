@@ -57,7 +57,7 @@ double SuperImpositor::calculateRMSD() {
     //    cout << fromSpacerToMatrix3Xd(set2) << "\n" << "\n" << "\n" << "\n";
 
     for (int i = 0; i < NumAmino; i++) {
-        set2->getAmino(i)[CA].setCoords(fromVector3dTovgVector3(rotoTraslSet.col(i)));
+        set1->getAmino(i)[CA].setCoords(fromVector3dTovgVector3(rotoTraslSet.col(i)));
     }
     fromSpacerToMatrix3Xd(*(set1));
     fromSpacerToMatrix3Xd(*(set2));
