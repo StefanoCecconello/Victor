@@ -38,10 +38,11 @@ int main(int argc, char** argv) {
     prot2->load(pl2);
 
     SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, "");
-    superImpositor->calculateRMSD();
-
-    Spacer* newSet1 = superImpositor->getSet1();
-    Spacer* newSet2 = superImpositor->getSet2();
+    double rmsd=superImpositor->calculateRMSD();
+    superImpositor->calculateMaxSub();
+    cout<<"l'rmsd e':"<<rmsd<<"\n";
+    Spacer newSet1 = superImpositor->getRMSDset1();
+    Spacer newSet2 = superImpositor->getRMSDset2();
     string proteineOUTPUT1 = "/home/cecco/Desktop/TestBIO2/output1.pdb";
     string proteineOUTPUT2 = "/home/cecco/Desktop/TestBIO2/output2.pdb";
     ofstream outFile1(proteineOUTPUT1.c_str());
@@ -49,8 +50,8 @@ int main(int argc, char** argv) {
 
     PdbSaver saveSet1(outFile1);
     PdbSaver saveSet2(outFile2);
-    saveSet1.saveSpacer(*(newSet1));
-    saveSet2.saveSpacer(*(newSet2));
+    saveSet1.saveSpacer(newSet1);
+    saveSet2.saveSpacer(newSet2);
     return 0;
 }
 

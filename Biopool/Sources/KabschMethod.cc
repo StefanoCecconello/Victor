@@ -9,7 +9,7 @@ using namespace Victor::Biopool;
 KabschMethod::KabschMethod() {
 }
 
-Eigen::Affine3d* KabschMethod::rotate(Eigen::Matrix3Xd set1Matrix, Eigen::Matrix3Xd set2Matrix) {
+Eigen::Affine3d* KabschMethod::rotate(Eigen::Matrix3Xd set1Matrix, Eigen::Matrix3Xd set2Matrix) const{
     Eigen::Affine3d* output = new Eigen::Affine3d();
     //Rotation Matrix
     output->linear() = Eigen::Matrix3d::Identity(3, 3);

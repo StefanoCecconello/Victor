@@ -13,9 +13,9 @@ namespace Victor {
             Rotator();
 
             // PREDICATES:
-            virtual Eigen::Affine3d* rotate(Eigen::Matrix3Xd set1Matrix, Eigen::Matrix3Xd set2Matrix) = 0;
+            virtual Eigen::Affine3d* rotate(Eigen::Matrix3Xd set1Matrix, Eigen::Matrix3Xd set2Matrix) const = 0;
 
-        
+
 
         };
 
