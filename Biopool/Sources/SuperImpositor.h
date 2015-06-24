@@ -54,7 +54,7 @@ namespace Victor {
             vgVector3<double> fromVector3dTovgVector3(Eigen::Vector3d Vector3d) const;
             Eigen::Matrix3Xd fromSpacerToMatrix3Xd(Spacer spacerSet) const;
             std::vector<std::pair<int, int> > maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector< std::pair<int, int> > vectorSet);
-            std::vector< std::pair<int, int> > Extend(std::vector<std::pair<int, int> > M, Eigen::Matrix3Xd A, Eigen::Matrix3Xd B, double d, int L);
+            std::vector< std::pair<int, int> > Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd A, Eigen::Matrix3Xd B, double d, int L);
 
 
             // ATTRIBUTES:

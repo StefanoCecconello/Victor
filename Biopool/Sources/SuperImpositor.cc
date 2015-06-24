@@ -59,7 +59,7 @@ double SuperImpositor::calculateRMSD() {
 double SuperImpositor::calculateMaxSub() {
     std::vector<std::pair<int, int> > vectorSet;
     for (int i = 0; i < matrixSet1.cols(); i++) {
-        vectorSet.push_back(std::make_pair(i + 1, i + 1));
+        vectorSet.push_back(std::make_pair(i, i));
     }
     //M is a general vector. Is possible to use a general alignment  and not only (x,x),(y,y),ecc...
     maxSubAlignment(matrixSet1, matrixSet2, vectorSet);
@@ -77,12 +77,15 @@ std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3
     //nb ricorda che non e' detto che siano consecutivi gli elementi mentre estraggo nei vari cicli di Extend
     //std::vector<std::pair<int, int> >::iterator it;
     //it = vectorSet.begin();
+    //cout<<firstSet<<"\n"<<"\n"<<"\n";
+    //cout<<firstSet.col(0)<<"\n"<<"\n"<<"\n";
     for (int i = 0; i < n - L + 1; i++) {
+        M.clear();
         //Add the L elements
-        for (int i = 0; i < L; i++) {
-            M.push_back(vectorSet[i]);
+        for (int j = 0; j < L; j++) {
+            M.push_back(vectorSet[i + j]);
         }
-        M = Extend(M, firstSet, secondSet, distance, L);
+        M = Extend(M, vectorSet, firstSet, secondSet, distance, L);
         if (M.size() > sMax) {
 
             sMax = M.size();
@@ -92,56 +95,66 @@ std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3
     return mMax;
 }
 
-std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<int, int> > M, Eigen::Matrix3Xd A, Eigen::Matrix3Xd B, double d, int L) {
-    std::vector<std::pair<int, int> > n;
+std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd A, Eigen::Matrix3Xd B, double d, int L) {
+    std::vector<std::pair<int, int> > N;
+    //std::vector<int > N;
+    double threshold;
     int k = 4;
-    //    Eigen::Matrix3Xd M1(3, L);
-    //    Eigen::Matrix3Xd M2(3, L);
-    Eigen::Matrix3Xd N1;
-    Eigen::Matrix3Xd N2;
-    for (int i = 0; i < L; i++) {
-        N1 << N1, A.col(M[i].first);
-        N2 << N2, B.col(M[i].second);
-    }
-    
-    
-    //BISOGNA TENERE TRACCIA DEGLI ELEMENTI PRESENTI IN N1 perche' dopo un ciclo A puo' non avvere un elemento .col(M[i].first)
-    
-    
-    
-    for (int j = 1; j <= k; j++) {
-        Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(N1, N2);
-        calculateRotation(A, B, rotoTraslation);
+    double distance;
+    Eigen::Matrix3Xd M1(3, 4);
+    Eigen::Matrix3Xd M2(3, 4);
 
-        double distance;
+    for (int i = 0; i < L; i++) {
+        M1.col(i) = A.col(M[i].first);
+        M2.col(i) = B.col(M[i].second);
+    }
+
+    Eigen::Matrix3Xd ARototrasled;
+    Eigen::Matrix3Xd BRototrasled;
+    //BISOGNA TENERE TRACCIA DEGLI ELEMENTI PRESENTI IN N1 perche' dopo un ciclo A puo' non avvere un elemento .col(M[i].first)
+
+
+    for (int j = 1; j <= k; j++) {
+        ARototrasled = A;
+        BRototrasled = B;
+        Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(M1, M2);
+        calculateRotation(ARototrasled, BRototrasled, rotoTraslation);
+
         //Calculate the distance between the points
 
-        for (int i = 0; i < A.cols(); i++) {
-            distance = (A.col(M[i].first) - B.col(M[i].second)).squaredNorm();
-            //            distance = pow((A(0, i) - B(0, i)), 2);
-            //            distance = distance + pow((A(1, i) - B(1, i)), 2);
-            //            distance = distance + pow((A(2, i) - B(2, i)), 2);
-            distance = sqrt(distance);
-            if (distance < ((j * d) / k)) {
-                N1 << A.col(M[i].first);
-                N2 << B.col(M[i].second);
-            }
-        }
-    }
-    Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(N1, N2);
-    calculateRotation(A, B, rotoTraslation);
-    double distance;
-    //Calculate the distance between the points
+        N.clear();
 
-    for (int i = 0; i < A.cols(); i++) {
-        distance = (A.col(M[i].first) - B.col(M[i].second)).squaredNorm();
-        //            distance = pow((A(0, i) - B(0, i)), 2);
-        //            distance = distance + pow((A(1, i) - B(1, i)), 2);
-        //            distance = distance + pow((A(2, i) - B(2, i)), 2);
+        for (int i = 0; i < A.cols(); i++) {
+            distance = (ARototrasled.col(vectorSet[i].first) - BRototrasled.col(vectorSet[i].second)).squaredNorm();
+            distance = sqrt(distance);
+            threshold = ((j * d) / k);
+
+            if (distance < threshold) {
+                N.push_back(vectorSet[i]);
+            }
+
+        }
+
+
+        Eigen::Matrix3Xd N1(3, N.size());
+        Eigen::Matrix3Xd N2(3, N.size());
+        for (unsigned int i = 0; i < N.size(); i++) {
+            N1.col(i) = A.col(N[i].first);
+            N2.col(i) = B.col(N[i].second);
+        }
+        M1 = N1;
+        M2 = N2;
+    }
+
+    Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(M1, M2);
+    calculateRotation(A, B, rotoTraslation);
+    //Calculate the distance between the points
+    M.clear();
+    for (int i = 0; i < M1.cols(); i++) {
+        distance = (M1.col(i) - M2.col(i)).squaredNorm();
         distance = sqrt(distance);
-        if (distance < d) {
-            N1 << A.col(M[i].first);
-            N2 << B.col(M[i].second);
+        if (distance <= d) {
+            M.push_back(N[i]);
         }
     }
 
@@ -225,6 +238,7 @@ Spacer SuperImpositor::fromMatrix3XdToSpacer(Eigen::Matrix3Xd matrix3Xd, int num
         newSpacer = *(set2);
     int NumAmino = matrix3Xd.cols();
     for (int i = 0; i < NumAmino; i++) {
+
         newSpacer.getAmino(i)[CA].setCoords(fromVector3dTovgVector3(matrix3Xd.col(i)));
     }
     return newSpacer;
@@ -233,20 +247,24 @@ Spacer SuperImpositor::fromMatrix3XdToSpacer(Eigen::Matrix3Xd matrix3Xd, int num
 vgVector3<double> SuperImpositor::fromVector3dTovgVector3(Eigen::Vector3d Vector3d) const {
     vgVector3<double> traslationVector;
     for (int r = 0; r < 3; r++) {
+
         traslationVector[r] = Vector3d(r);
     }
     return traslationVector;
 }
 
 Spacer* SuperImpositor::getSet2() const {
+
     return set2;
 }
 
 Spacer* SuperImpositor::getSet1() const {
+
     return set1;
 }
 
 Spacer SuperImpositor::getRMSDset2() const {
+
     return RMSDset2;
 }
 
