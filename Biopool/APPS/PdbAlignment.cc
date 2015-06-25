@@ -21,8 +21,10 @@ using namespace Victor::Biopool;
 int main(int argc, char** argv) {
     //Rotator* rotator = new KabschMethod;
     //Load proteins
-    string proteine1 = "/home/cecco/Desktop/TestBIO2/15C8_H_input.pdb";
-    string proteine2 = "/home/cecco/Desktop/TestBIO2/25C8_H_input.pdb";
+    //string proteine1 = "/home/cecco/Desktop/TestBIO2/15C8_H_input.pdb";
+    //string proteine2 = "/home/cecco/Desktop/TestBIO2/25C8_H_input.pdb";
+    string proteine1 = "/home/cecco/Desktop/AVANZATITestBIO2/T0760TS008_1";
+    string proteine2 = "/home/cecco/Desktop/AVANZATITestBIO2/T0760TS008_2";
     ifstream inFile1(proteine1.c_str());
     ifstream inFile2(proteine2.c_str());
     // creates the PdbLoader1 object
@@ -38,9 +40,10 @@ int main(int argc, char** argv) {
     prot2->load(pl2);
 
     SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, "");
-    double rmsd=superImpositor->calculateRMSD();
-    superImpositor->calculateMaxSub();
-    cout<<"l'rmsd e':"<<rmsd<<"\n";
+    double rmsd = superImpositor->calculateRMSD();
+    double maxSub = superImpositor->calculateMaxSub();
+    cout << "l'rmsd e':" << rmsd << "\n";
+    cout << "il maxsub e':" << maxSub << "\n";
     Spacer newSet1 = superImpositor->getRMSDset1();
     Spacer newSet2 = superImpositor->getRMSDset2();
     string proteineOUTPUT1 = "/home/cecco/Desktop/TestBIO2/output1.pdb";

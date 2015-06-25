@@ -45,10 +45,10 @@ double SuperImpositor::calculateRMSD() {
         //distanceSquared = distanceSquared + pow((matrixSet1(0, col) - matrixSet2(0, col)), 2);
         //distanceSquared = distanceSquared + pow((matrixSet1(1, col) - matrixSet2(1, col)), 2);
         //distanceSquared = distanceSquared + pow((matrixSet1(2, col) - matrixSet2(2, col)), 2);
-        //distance=sqrt(distanceSquared);
+        //distanceSquared=sqrt(distanceSquared);
         distanceSquared += (matrixSet1.col(col) - matrixSet2.col(col)).squaredNorm();
 
-        //rmsdSQ+=distance^2;
+        //rmsdSQ+=distanceSquared^2;
         //distance=0;
     }
     msd = distanceSquared / columns;
@@ -58,51 +58,73 @@ double SuperImpositor::calculateRMSD() {
 
 double SuperImpositor::calculateMaxSub() {
     std::vector<std::pair<int, int> > vectorSet;
+    double distance;
+    double d = 3.5;
+    double sum = 0;
+
     for (int i = 0; i < matrixSet1.cols(); i++) {
         vectorSet.push_back(std::make_pair(i, i));
     }
     //M is a general vector. Is possible to use a general alignment  and not only (x,x),(y,y),ecc...
-    maxSubAlignment(matrixSet1, matrixSet2, vectorSet);
-
-    return 0;
+    std::vector<std::pair<int, int> > mMax;
+    Eigen::Matrix3Xd modifyMatrixSet1 = matrixSet1;
+    Eigen::Matrix3Xd modifyMatrixSet2 = matrixSet2;
+    mMax = maxSubAlignment(modifyMatrixSet1, modifyMatrixSet2, vectorSet, d);
+    //    for (unsigned int i = 0; i < mMax.size(); i++) {
+    //        distance = (modifymatrixSet1.col(mMax[i].first) - modifymatrixSet2.col(mMax[i].second)).squaredNorm();
+    //        if (distance <= d) {
+    //            M.push_back(N[i]);
+    //        }
+    //    }
+    //cout<<mMax.size()<<"\n"<<"\n";
+    for (unsigned int i = 0; i < mMax.size(); i++) {
+        //distance = (matrixSet1.col(mMax[i].first) - matrixSet2.col(mMax[i].second)).squaredNorm();
+        distance = (modifyMatrixSet1.col(mMax[i].first) - modifyMatrixSet2.col(mMax[i].second)).squaredNorm();
+        distance = sqrt(distance);
+        sum = sum + (1 / (1 + pow((distance / d), 2)));
+    }
+    cout << mMax.size() << "\n" << "\n" << "\n";
+    return sum / modifyMatrixSet1.cols();
 }
 
-std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector<std::pair<int, int> > vectorSet) {
-    double distance = 3.5;
+std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector<std::pair<int, int> > vectorSet, double d) {
     long unsigned int sMax = 0;
     int n = firstSet.cols();
     int L = 4;
+    Eigen::Matrix3Xd modifiedFirstSet;
+    Eigen::Matrix3Xd modifiedSecondSet;
+    Eigen::Matrix3Xd optFirstSet;
+    Eigen::Matrix3Xd optSecondSet;
     std::vector<std::pair<int, int> > mMax;
     std::vector<std::pair<int, int> > M;
-    //nb ricorda che non e' detto che siano consecutivi gli elementi mentre estraggo nei vari cicli di Extend
-    //std::vector<std::pair<int, int> >::iterator it;
-    //it = vectorSet.begin();
-    //cout<<firstSet<<"\n"<<"\n"<<"\n";
-    //cout<<firstSet.col(0)<<"\n"<<"\n"<<"\n";
     for (int i = 0; i < n - L + 1; i++) {
+        modifiedFirstSet = firstSet;
+        modifiedSecondSet = secondSet;
         M.clear();
         //Add the L elements
         for (int j = 0; j < L; j++) {
             M.push_back(vectorSet[i + j]);
         }
-        M = Extend(M, vectorSet, firstSet, secondSet, distance, L);
+        M = Extend(M, vectorSet, modifiedFirstSet, modifiedSecondSet, d, L, n);
         if (M.size() > sMax) {
-
+            optFirstSet = modifiedFirstSet;
+            optSecondSet = modifiedSecondSet;
             sMax = M.size();
             mMax = M;
         }
     }
+    firstSet = optFirstSet;
+    secondSet = optSecondSet;
     return mMax;
 }
 
-std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd A, Eigen::Matrix3Xd B, double d, int L) {
+std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd& A, Eigen::Matrix3Xd& B, double d, int L, int n) {
     std::vector<std::pair<int, int> > N;
-    //std::vector<int > N;
     double threshold;
     int k = 4;
     double distance;
-    Eigen::Matrix3Xd M1(3, 4);
-    Eigen::Matrix3Xd M2(3, 4);
+    Eigen::Matrix3Xd M1(3, L);
+    Eigen::Matrix3Xd M2(3, L);
 
     for (int i = 0; i < L; i++) {
         M1.col(i) = A.col(M[i].first);
@@ -111,7 +133,6 @@ std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<
 
     Eigen::Matrix3Xd ARototrasled;
     Eigen::Matrix3Xd BRototrasled;
-    //BISOGNA TENERE TRACCIA DEGLI ELEMENTI PRESENTI IN N1 perche' dopo un ciclo A puo' non avvere un elemento .col(M[i].first)
 
 
     for (int j = 1; j <= k; j++) {
@@ -124,11 +145,10 @@ std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<
 
         N.clear();
 
-        for (int i = 0; i < A.cols(); i++) {
+        for (int i = 0; i < n; i++) {
             distance = (ARototrasled.col(vectorSet[i].first) - BRototrasled.col(vectorSet[i].second)).squaredNorm();
             distance = sqrt(distance);
             threshold = ((j * d) / k);
-
             if (distance < threshold) {
                 N.push_back(vectorSet[i]);
             }
@@ -148,14 +168,33 @@ std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<
 
     Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(M1, M2);
     calculateRotation(A, B, rotoTraslation);
+
     //Calculate the distance between the points
-    M.clear();
-    for (int i = 0; i < M1.cols(); i++) {
-        distance = (M1.col(i) - M2.col(i)).squaredNorm();
+    M = N;
+    for (std::vector<std::pair<int, int> >::iterator it = M.begin(); it != M.end(); ++it) {
+        //for (unsigned int i = 0; i < N.size(); i++) {
+        distance = (A.col(it->first) - B.col(it->second)).squaredNorm();
         distance = sqrt(distance);
-        if (distance <= d) {
-            M.push_back(N[i]);
+        //        if (((float)((int)(distance*10.0)))/10.0 == 3.5) {
+        //            if(iii==36)
+        //            cout << iii << "\n";
+        //        }
+        if (distance  > d) {
+            M.erase(it);
+            if (it == M.end()) {
+                break;
+            }
         }
+    }
+    //cout<<"\n"<<"\n"<<"\n"<<"\n";
+    // << "M " << M.size() << "\n";
+    if (M.size() == 174) {
+        for (std::vector<std::pair<int, int> >::iterator it = M.begin(); it != M.end(); ++it) {
+            distance = (A.col(it->first) - B.col(it->second)).squaredNorm();
+            distance = sqrt(distance);
+            cout<<distance<<"\n";
+        }
+        cout<<"\n"<<"\n"<<"\n";
     }
 
     return M;
