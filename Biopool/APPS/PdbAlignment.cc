@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
     //Load proteins
     //string proteine1 = "/home/cecco/Desktop/TestBIO2/15C8_H_input.pdb";
     //string proteine2 = "/home/cecco/Desktop/TestBIO2/25C8_H_input.pdb";
-    string proteine1 = "/home/cecco/Desktop/AVANZATITestBIO2/T0760TS008_1";
-    string proteine2 = "/home/cecco/Desktop/AVANZATITestBIO2/T0760TS008_2";
+    string proteine1 = "/home/cecco/Desktop/AVANZATITestBIO2/T0760TS008_4";
+    string proteine2 = "/home/cecco/Desktop/AVANZATITestBIO2/T0760TS008_5";
     ifstream inFile1(proteine1.c_str());
     ifstream inFile2(proteine2.c_str());
     // creates the PdbLoader1 object
@@ -41,9 +41,24 @@ int main(int argc, char** argv) {
 
     SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, "");
     double rmsd = superImpositor->calculateRMSD();
-    double maxSub = superImpositor->calculateMaxSub();
+
+    std::vector<std::pair<int, int> > vectorSet;
+
+    for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
+        vectorSet.push_back(std::make_pair(i, i));
+    }
+
+    double maxSub = superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
+
+    double gdt = superImpositor->calculateGdt(vectorSet);
+
+    double TMScore = superImpositor->calculateTMScore(vectorSet);
+
     cout << "l'rmsd e':" << rmsd << "\n";
     cout << "il maxsub e':" << maxSub << "\n";
+    cout << "il gdt e':" << gdt << "\n";
+    cout << "il TMScore e':" << TMScore << "\n";
+
     Spacer newSet1 = superImpositor->getRMSDset1();
     Spacer newSet2 = superImpositor->getRMSDset2();
     string proteineOUTPUT1 = "/home/cecco/Desktop/TestBIO2/output1.pdb";

@@ -33,20 +33,22 @@ SuperImpositor::~SuperImpositor() {
 }
 
 double SuperImpositor::calculateRMSD() {
-    Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(matrixSet1, matrixSet2);
-    calculateRotation(matrixSet1, matrixSet2, rotoTraslation);
-    RMSDset1 = fromMatrix3XdToSpacer(matrixSet1, 1);
-    RMSDset2 = fromMatrix3XdToSpacer(matrixSet2, 2);
+    Eigen::Matrix3Xd modifyMatrixSet1 = matrixSet1;
+    Eigen::Matrix3Xd modifyMatrixSet2 = matrixSet2;
+    Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(modifyMatrixSet1, modifyMatrixSet2);
+    calculateRotation(modifyMatrixSet1, modifyMatrixSet2, rotoTraslation);
+    RMSDset1 = fromMatrix3XdToSpacer(modifyMatrixSet1, 1);
+    RMSDset2 = fromMatrix3XdToSpacer(modifyMatrixSet2, 2);
     //Calculate rmsd
     double distanceSquared = 0;
     double msd;
-    int columns = matrixSet1.cols();
+    int columns = modifyMatrixSet1.cols();
     for (int col = 0; col < columns; col++) {
-        //distanceSquared = distanceSquared + pow((matrixSet1(0, col) - matrixSet2(0, col)), 2);
-        //distanceSquared = distanceSquared + pow((matrixSet1(1, col) - matrixSet2(1, col)), 2);
-        //distanceSquared = distanceSquared + pow((matrixSet1(2, col) - matrixSet2(2, col)), 2);
+        //distanceSquared = distanceSquared + pow((modifyMatrixSet1(0, col) - modifyMatrixSet2(0, col)), 2);
+        //distanceSquared = distanceSquared + pow((modifyMatrixSet1(1, col) - modifyMatrixSet2(1, col)), 2);
+        //distanceSquared = distanceSquared + pow((modifyMatrixSet1(2, col) - modifyMatrixSet2(2, col)), 2);
         //distanceSquared=sqrt(distanceSquared);
-        distanceSquared += (matrixSet1.col(col) - matrixSet2.col(col)).squaredNorm();
+        distanceSquared += (modifyMatrixSet1.col(col) - modifyMatrixSet2.col(col)).squaredNorm();
 
         //rmsdSQ+=distanceSquared^2;
         //distance=0;
@@ -56,38 +58,56 @@ double SuperImpositor::calculateRMSD() {
     return sqrt(msd);
 }
 
-double SuperImpositor::calculateMaxSub() {
-    std::vector<std::pair<int, int> > vectorSet;
+double SuperImpositor::calculateMaxSub(double d, std::vector<std::pair<int, int> > vectorSet, char E) {
+
+
+
     double distance;
-    double d = 3.5;
     double sum = 0;
 
-    for (int i = 0; i < matrixSet1.cols(); i++) {
-        vectorSet.push_back(std::make_pair(i, i));
-    }
     //M is a general vector. Is possible to use a general alignment  and not only (x,x),(y,y),ecc...
     std::vector<std::pair<int, int> > mMax;
     Eigen::Matrix3Xd modifyMatrixSet1 = matrixSet1;
     Eigen::Matrix3Xd modifyMatrixSet2 = matrixSet2;
-    mMax = maxSubAlignment(modifyMatrixSet1, modifyMatrixSet2, vectorSet, d);
-    //    for (unsigned int i = 0; i < mMax.size(); i++) {
-    //        distance = (modifymatrixSet1.col(mMax[i].first) - modifymatrixSet2.col(mMax[i].second)).squaredNorm();
-    //        if (distance <= d) {
-    //            M.push_back(N[i]);
-    //        }
-    //    }
-    //cout<<mMax.size()<<"\n"<<"\n";
+    mMax = maxSubAlignment(modifyMatrixSet1, modifyMatrixSet2, vectorSet, d, E);
     for (unsigned int i = 0; i < mMax.size(); i++) {
         //distance = (matrixSet1.col(mMax[i].first) - matrixSet2.col(mMax[i].second)).squaredNorm();
         distance = (modifyMatrixSet1.col(mMax[i].first) - modifyMatrixSet2.col(mMax[i].second)).squaredNorm();
         distance = sqrt(distance);
         sum = sum + (1 / (1 + pow((distance / d), 2)));
     }
-    cout << mMax.size() << "\n" << "\n" << "\n";
     return sum / modifyMatrixSet1.cols();
 }
 
-std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector<std::pair<int, int> > vectorSet, double d) {
+double SuperImpositor::calculateGdt(std::vector<std::pair<int, int> > vectorSet) {
+    //0.6135 con maxsub programmino per 4 e 5
+    //    cout<<calculateMaxSub(1, vectorSet)<<"\n";
+    //    cout<<calculateMaxSub(2, vectorSet)<<"\n";
+    //    cout<<calculateMaxSub(4, vectorSet)<<"\n";
+    //    cout<<calculateMaxSub(8, vectorSet)<<"\n";
+    return (calculateMaxSub(1, vectorSet, 'n') + calculateMaxSub(2, vectorSet, 'n') + calculateMaxSub(4, vectorSet, 'n') + calculateMaxSub(8, vectorSet, 'n')) / 4;
+}
+
+double SuperImpositor::calculateTMScore(std::vector<std::pair<int, int> > vectorSet) {
+    Eigen::Matrix3Xd modifyMatrixSet1 = matrixSet1;
+    //    Eigen::Matrix3Xd modifyMatrixSet2 = matrixSet2;
+    //    Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(modifyMatrixSet1, modifyMatrixSet2);
+    //    calculateRotation(modifyMatrixSet1, modifyMatrixSet2, rotoTraslation);
+    //    double sum = 0;
+    //    double distance;
+    double d0;
+    d0 = (1.24 * cbrt(modifyMatrixSet1.cols() - 15)) - 1.8;
+    //    for (unsigned int i = 0; i < modifyMatrixSet2.cols(); i++) {
+    //        distance = (modifyMatrixSet1.col(vectorSet[i].first) - modifyMatrixSet2.col(vectorSet[i].second)).squaredNorm();
+    //        distance = sqrt(distance);
+    //        sum = sum + (1 / (1 + pow((distance / d0), 2)));
+    //    }
+    //    sum = sum / modifyMatrixSet1.cols();
+
+    return calculateMaxSub(d0, vectorSet, 'n');
+}
+
+std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector<std::pair<int, int> > vectorSet, double d, char E) {
     long unsigned int sMax = 0;
     int n = firstSet.cols();
     int L = 4;
@@ -105,7 +125,7 @@ std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3
         for (int j = 0; j < L; j++) {
             M.push_back(vectorSet[i + j]);
         }
-        M = Extend(M, vectorSet, modifiedFirstSet, modifiedSecondSet, d, L, n);
+        M = Extend(M, vectorSet, modifiedFirstSet, modifiedSecondSet, d, L, n, E);
         if (M.size() > sMax) {
             optFirstSet = modifiedFirstSet;
             optSecondSet = modifiedSecondSet;
@@ -118,7 +138,7 @@ std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3
     return mMax;
 }
 
-std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd& A, Eigen::Matrix3Xd& B, double d, int L, int n) {
+std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd& A, Eigen::Matrix3Xd& B, double d, int L, int n, char E) {
     std::vector<std::pair<int, int> > N;
     double threshold;
     int k = 4;
@@ -175,26 +195,12 @@ std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<
         //for (unsigned int i = 0; i < N.size(); i++) {
         distance = (A.col(it->first) - B.col(it->second)).squaredNorm();
         distance = sqrt(distance);
-        //        if (((float)((int)(distance*10.0)))/10.0 == 3.5) {
-        //            if(iii==36)
-        //            cout << iii << "\n";
-        //        }
-        if (distance  > d) {
+        if (distance > d && E == 'y') {
             M.erase(it);
             if (it == M.end()) {
                 break;
             }
         }
-    }
-    //cout<<"\n"<<"\n"<<"\n"<<"\n";
-    // << "M " << M.size() << "\n";
-    if (M.size() == 174) {
-        for (std::vector<std::pair<int, int> >::iterator it = M.begin(); it != M.end(); ++it) {
-            distance = (A.col(it->first) - B.col(it->second)).squaredNorm();
-            distance = sqrt(distance);
-            cout<<distance<<"\n";
-        }
-        cout<<"\n"<<"\n"<<"\n";
     }
 
     return M;
