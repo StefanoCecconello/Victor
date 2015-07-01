@@ -10,66 +10,223 @@
 #include <PdbLoader.h>
 #include <PdbSaver.h>
 #include <iostream>
+#include <GetArg.h>
 
 using namespace std;
 using namespace Victor;
 using namespace Victor::Biopool;
 
-/*
- * 
- */
-int main(int argc, char** argv) {
-    //Rotator* rotator = new KabschMethod;
-    //Load proteins
-    //string proteine1 = "/home/cecco/Desktop/TestBIO2/15C8_H_input.pdb";
-    //string proteine2 = "/home/cecco/Desktop/TestBIO2/25C8_H_input.pdb";
-    string proteine1 = "/home/cecco/Desktop/AVANZATITestBIO2/T0760TS008_4";
-    string proteine2 = "/home/cecco/Desktop/AVANZATITestBIO2/T0760TS008_5";
-    ifstream inFile1(proteine1.c_str());
-    ifstream inFile2(proteine2.c_str());
-    // creates the PdbLoader1 object
-    PdbLoader pl1(inFile1);
-    // creates the PdbLoader2 object
-    PdbLoader pl2(inFile2);
 
 
-    Protein* prot1 = new Protein();
-    Protein* prot2 = new Protein();
+//TODO:
+//-CONTROLLARE NELLE REGOLE DEL PROGETTO COME LEGGERE GLI INPUT
+//-CONTROLLARE SE VUOLE SEMPRE TUTTI GLI OUTPUT O SOLO UN METODO RICHIESTO
+//-CHIEDERE SE VA BENE L' APPROSSIMAZIONE OTTENUTA DI 10^-2 PER GDT E TMSCORE o chiedere come si implementa (tipo per l'erase)+ chiedi se basta test per le 4 funz principali
+//-STAMPARE IL PDF PER OGNI METODO, prima + seconda proteina una modificata
+//-SCRIVERE la documentazione
+//-SCRIVERE TEST
+//
 
-    prot1->load(pl1);
-    prot2->load(pl2);
+void sShowHelp() {
+    cout << "\n"
+            << "   Options: \n"
+            << "\t-i <filename>      \t\t Input file for PDB structure \n"
+            << "\n"
 
-    SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, "");
-    double rmsd = superImpositor->calculateRMSD();
+            << "\t-r rmsd            \t\t run the rmsd algorithm and display the value \n"
+            << "\t-m maxsub          \t\t run the maxsub algorithm and display the value \n"
+            << "\t-t gdt             \t\t run the gdt algorithm and display the value \n"
+            << "\t-g tmscore         \t\t run the tmscore algorithm and display the value \n"
+            << "\n"
 
-    std::vector<std::pair<int, int> > vectorSet;
+            << "\t-R rmsd            \t\t get in the output file the rmsd rototraslated proteins \n"
+            << "\t-M maxsub          \t\t get in the output file the maxsub rototraslated proteins \n"
+            << "\t-T gdt             \t\t get in the output file the gdt rototraslated proteins \n"
+            << "\t-G tmscore         \t\t get in the output file the tmscore rototraslated proteins \n"
+            << "\n"
 
-    for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
-        vectorSet.push_back(std::make_pair(i, i));
+            << "\t-x rotation method \t\t select the rotation method from: \n"
+            << "\t                   \t\t -kabsch method \n"
+
+            << "\n";
+}
+
+void savePdbOutput(vector <Spacer> spacers, string name);
+
+int main(int nArgs, char* argv[]) {
+
+    if (getArg("h", nArgs, argv)) {
+        sShowHelp();
+        return 1;
+    };
+
+    vector<string> inputFile;
+    getArg("i", inputFile, nArgs, argv, "!");
+    if (inputFile.size() != 2) {
+        cout << "Error you need to get in input exactly 2 input file. Aborting. (-h for help)" << endl;
+        return -1;
     }
 
-    double maxSub = superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
+    bool rmsd, maxsub, gdt, tmscore;
+    bool rmsdOutput, maxsubOutput, gdtOutput, tmscoreOutput;
 
-    double gdt = superImpositor->calculateGdt(vectorSet);
+    rmsd = getArg("r", nArgs, argv);
+    maxsub = getArg("m", nArgs, argv);
+    gdt = getArg("g", nArgs, argv);
+    tmscore = getArg("t", nArgs, argv);
 
-    double TMScore = superImpositor->calculateTMScore(vectorSet);
+    rmsdOutput = getArg("R", nArgs, argv);
+    maxsubOutput = getArg("M", nArgs, argv);
+    gdtOutput = getArg("G", nArgs, argv);
+    tmscoreOutput = getArg("T", nArgs, argv);
 
-    cout << "l'rmsd e':" << rmsd << "\n";
-    cout << "il maxsub e':" << maxSub << "\n";
-    cout << "il gdt e':" << gdt << "\n";
-    cout << "il TMScore e':" << TMScore << "\n";
+    if (rmsd || maxsub || gdt || tmscore || rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput) {
+        string rotationMethod;
+        getArg("x", rotationMethod, nArgs, argv, "");
 
-    Spacer newSet1 = superImpositor->getRMSDset1();
-    Spacer newSet2 = superImpositor->getRMSDset2();
-    string proteineOUTPUT1 = "/home/cecco/Desktop/TestBIO2/output1.pdb";
-    string proteineOUTPUT2 = "/home/cecco/Desktop/TestBIO2/output2.pdb";
-    ofstream outFile1(proteineOUTPUT1.c_str());
-    ofstream outFile2(proteineOUTPUT2.c_str());
+        ifstream inFile1(inputFile[0].c_str());
+        ifstream inFile2(inputFile[1].c_str());
 
-    PdbSaver saveSet1(outFile1);
-    PdbSaver saveSet2(outFile2);
-    saveSet1.saveSpacer(newSet1);
-    saveSet2.saveSpacer(newSet2);
+        // creates the PdbLoader objects
+        PdbLoader pl1(inFile1);
+        PdbLoader pl2(inFile2);
+
+        Protein* prot1 = new Protein();
+        Protein* prot2 = new Protein();
+
+        prot1->load(pl1);
+        prot2->load(pl2);
+
+        SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, rotationMethod);
+
+        if (rmsd) {
+            double rmsd = superImpositor->calculateRMSD();
+
+            if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
+                vector <Spacer> spacers[2];
+                Spacer newSet1 = superImpositor->getRMSDset1();
+                Spacer newSet2 = superImpositor->getRMSDset2();
+                spacers[0] = newSet1;
+                spacers[1] = newSet2;
+                savePdbOutput(spacers, "rmsd");
+            }
+            cout << "The rmsd value is': " << rmsd << "\n";
+        }
+
+        if (rmsdOutput) {
+            superImpositor->calculateRMSD();
+            Spacer newSet1 = superImpositor->getRMSDset1();
+            Spacer newSet2 = superImpositor->getRMSDset2();
+            //            savePdbOutput(newSet1, 1);
+            //            savePdbOutput(newSet2, 2);
+        }
+
+        if (maxsub) {
+            std::vector<std::pair<int, int> > vectorSet;
+
+            for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
+                vectorSet.push_back(std::make_pair(i, i));
+            }
+            double maxSub = superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
+
+            if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
+                Spacer newSet1 = superImpositor->getRMSDset1();
+                Spacer newSet2 = superImpositor->getRMSDset2();
+                //                savePdbOutput(newSet1, 1);
+                //                savePdbOutput(newSet2, 2);
+            }
+            cout << "The maxsub value is: " << maxSub << "\n";
+        }
+
+        if (maxsubOutput) {
+            std::vector<std::pair<int, int> > vectorSet;
+
+            for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
+                vectorSet.push_back(std::make_pair(i, i));
+            }
+            superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
+
+            Spacer newSet1 = superImpositor->getRMSDset1();
+            Spacer newSet2 = superImpositor->getRMSDset2();
+            //            savePdbOutput(newSet1, 1);
+            //            savePdbOutput(newSet2, 2);
+        }
+
+        if (gdt) {
+            std::vector<std::pair<int, int> > vectorSet;
+
+            for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
+                vectorSet.push_back(std::make_pair(i, i));
+            }
+            double gdt = superImpositor->calculateGdt(vectorSet);
+            if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
+                Spacer newSet1 = superImpositor->getRMSDset1();
+                Spacer newSet2 = superImpositor->getRMSDset2();
+                //                savePdbOutput(newSet1, 1);
+                //                savePdbOutput(newSet2, 2);
+            }
+            cout << "The gdt value is: " << gdt << "\n";
+        }
+
+        if (gdtOutput) {
+            std::vector<std::pair<int, int> > vectorSet;
+
+            for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
+                vectorSet.push_back(std::make_pair(i, i));
+            }
+            superImpositor->calculateGdt(vectorSet);
+
+            Spacer newSet1 = superImpositor->getRMSDset1();
+            Spacer newSet2 = superImpositor->getRMSDset2();
+            //            savePdbOutput(newSet1, 1);
+            //            savePdbOutput(newSet2, 2);
+        }
+
+        if (tmscore) {
+            std::vector<std::pair<int, int> > vectorSet;
+
+            for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
+                vectorSet.push_back(std::make_pair(i, i));
+            }
+            double TMScore = superImpositor->calculateTMScore(vectorSet);
+            if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
+                Spacer newSet1 = superImpositor->getRMSDset1();
+                Spacer newSet2 = superImpositor->getRMSDset2();
+                //                savePdbOutput(newSet1, 1);
+                //                savePdbOutput(newSet2, 2);
+            }
+            cout << "The TMScore value is: " << TMScore << "\n";
+        }
+
+        if (tmscoreOutput) {
+            std::vector<std::pair<int, int> > vectorSet;
+
+            for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
+                vectorSet.push_back(std::make_pair(i, i));
+            }
+            superImpositor->calculateTMScore(vectorSet);
+
+            Spacer newSet1 = superImpositor->getRMSDset1();
+            Spacer newSet2 = superImpositor->getRMSDset2();
+            //            savePdbOutput(newSet1, 1);
+            //            savePdbOutput(newSet2, 2);
+        }
+
+
+    } else {
+        cout << "No method select (-h for help)\n";
+    }
+
     return 0;
 }
 
+void savePdbOutput(vector <Spacer> spacers, string name) {
+    string proteineOUTPUT = name + "output.pdb";
+    ofstream outFile(proteineOUTPUT.c_str());
+
+    PdbSaver saveSet(outFile);
+    cout<<spacers.size();
+    for (unsigned int i = 0; i < spacers.size(); i++) {
+        saveSet.saveSpacer(spacers[i]);
+    }
+}
