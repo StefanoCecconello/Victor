@@ -35,14 +35,14 @@ void sShowHelp() {
 
             << "\t-r rmsd            \t\t run the rmsd algorithm and display the value \n"
             << "\t-m maxsub          \t\t run the maxsub algorithm and display the value \n"
-            << "\t-t gdt             \t\t run the gdt algorithm and display the value \n"
-            << "\t-g tmscore         \t\t run the tmscore algorithm and display the value \n"
+            << "\t-g gdt             \t\t run the gdt algorithm and display the value \n"
+            << "\t-t tmscore         \t\t run the tmscore algorithm and display the value \n"
             << "\n"
 
             << "\t-R rmsd            \t\t get in the output file the rmsd rototraslated proteins \n"
             << "\t-M maxsub          \t\t get in the output file the maxsub rototraslated proteins \n"
-            << "\t-T gdt             \t\t get in the output file the gdt rototraslated proteins \n"
-            << "\t-G tmscore         \t\t get in the output file the tmscore rototraslated proteins \n"
+            << "\t-G gdt             \t\t get in the output file the gdt rototraslated proteins \n"
+            << "\t-T tmscore         \t\t get in the output file the tmscore rototraslated proteins \n"
             << "\n"
 
             << "\t-x rotation method \t\t select the rotation method from: \n"
@@ -103,11 +103,12 @@ int main(int nArgs, char* argv[]) {
             double rmsd = superImpositor->calculateRMSD();
 
             if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
-                vector <Spacer> spacers[2];
+                vector <Spacer> spacers;
                 Spacer newSet1 = superImpositor->getRMSDset1();
                 Spacer newSet2 = superImpositor->getRMSDset2();
-                spacers[0] = newSet1;
-                spacers[1] = newSet2;
+
+                spacers.push_back(newSet1);
+                spacers.push_back(newSet2);
                 savePdbOutput(spacers, "rmsd");
             }
             cout << "The rmsd value is': " << rmsd << "\n";
@@ -115,10 +116,13 @@ int main(int nArgs, char* argv[]) {
 
         if (rmsdOutput) {
             superImpositor->calculateRMSD();
+            vector <Spacer> spacers;
             Spacer newSet1 = superImpositor->getRMSDset1();
             Spacer newSet2 = superImpositor->getRMSDset2();
-            //            savePdbOutput(newSet1, 1);
-            //            savePdbOutput(newSet2, 2);
+
+            spacers.push_back(newSet1);
+            spacers.push_back(newSet2);
+            savePdbOutput(spacers, "rmsd");
         }
 
         if (maxsub) {
@@ -130,10 +134,13 @@ int main(int nArgs, char* argv[]) {
             double maxSub = superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
 
             if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
-                Spacer newSet1 = superImpositor->getRMSDset1();
-                Spacer newSet2 = superImpositor->getRMSDset2();
-                //                savePdbOutput(newSet1, 1);
-                //                savePdbOutput(newSet2, 2);
+                vector <Spacer> spacers;
+                Spacer newSet1 = superImpositor->getMaxSubset1();
+                Spacer newSet2 = superImpositor->getMaxSubset2();
+
+                spacers.push_back(newSet1);
+                spacers.push_back(newSet2);
+                savePdbOutput(spacers, "maxsub");
             }
             cout << "The maxsub value is: " << maxSub << "\n";
         }
@@ -146,10 +153,12 @@ int main(int nArgs, char* argv[]) {
             }
             superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
 
-            Spacer newSet1 = superImpositor->getRMSDset1();
-            Spacer newSet2 = superImpositor->getRMSDset2();
-            //            savePdbOutput(newSet1, 1);
-            //            savePdbOutput(newSet2, 2);
+            vector <Spacer> spacers;
+            Spacer newSet1 = superImpositor->getMaxSubset1();
+            Spacer newSet2 = superImpositor->getMaxSubset2();
+            spacers.push_back(newSet1);
+            spacers.push_back(newSet2);
+            savePdbOutput(spacers, "maxsub");
         }
 
         if (gdt) {
@@ -160,10 +169,28 @@ int main(int nArgs, char* argv[]) {
             }
             double gdt = superImpositor->calculateGdt(vectorSet);
             if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
-                Spacer newSet1 = superImpositor->getRMSDset1();
-                Spacer newSet2 = superImpositor->getRMSDset2();
-                //                savePdbOutput(newSet1, 1);
-                //                savePdbOutput(newSet2, 2);
+                vector <Spacer> spacers;
+                Spacer newSet1 = superImpositor->getGdtset1_1();
+                Spacer newSet2 = superImpositor->getGdtset1_2();
+
+                Spacer newSet3 = superImpositor->getGdtset2_1();
+                Spacer newSet4 = superImpositor->getGdtset2_2();
+
+                Spacer newSet5 = superImpositor->getGdtset3_1();
+                Spacer newSet6 = superImpositor->getGdtset3_2();
+
+                Spacer newSet7 = superImpositor->getGdtset4_1();
+                Spacer newSet8 = superImpositor->getGdtset4_2();
+
+                spacers.push_back(newSet1);
+                spacers.push_back(newSet2);
+                spacers.push_back(newSet3);
+                spacers.push_back(newSet4);
+                spacers.push_back(newSet5);
+                spacers.push_back(newSet6);
+                spacers.push_back(newSet7);
+                spacers.push_back(newSet8);
+                //savePdbOutput(spacers, "gdt");
             }
             cout << "The gdt value is: " << gdt << "\n";
         }
@@ -176,10 +203,28 @@ int main(int nArgs, char* argv[]) {
             }
             superImpositor->calculateGdt(vectorSet);
 
-            Spacer newSet1 = superImpositor->getRMSDset1();
-            Spacer newSet2 = superImpositor->getRMSDset2();
-            //            savePdbOutput(newSet1, 1);
-            //            savePdbOutput(newSet2, 2);
+            vector <Spacer> spacers;
+            Spacer newSet1 = superImpositor->getGdtset1_1();
+            Spacer newSet2 = superImpositor->getGdtset1_2();
+
+            Spacer newSet3 = superImpositor->getGdtset2_1();
+            Spacer newSet4 = superImpositor->getGdtset2_2();
+
+            Spacer newSet5 = superImpositor->getGdtset3_1();
+            Spacer newSet6 = superImpositor->getGdtset3_2();
+
+            Spacer newSet7 = superImpositor->getGdtset4_1();
+            Spacer newSet8 = superImpositor->getGdtset4_2();
+
+            spacers.push_back(newSet1);
+            spacers.push_back(newSet2);
+            spacers.push_back(newSet3);
+            spacers.push_back(newSet4);
+            spacers.push_back(newSet5);
+            spacers.push_back(newSet6);
+            spacers.push_back(newSet7);
+            spacers.push_back(newSet8);
+            savePdbOutput(spacers, "gdt");
         }
 
         if (tmscore) {
@@ -190,10 +235,13 @@ int main(int nArgs, char* argv[]) {
             }
             double TMScore = superImpositor->calculateTMScore(vectorSet);
             if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
-                Spacer newSet1 = superImpositor->getRMSDset1();
-                Spacer newSet2 = superImpositor->getRMSDset2();
-                //                savePdbOutput(newSet1, 1);
-                //                savePdbOutput(newSet2, 2);
+                vector <Spacer> spacers;
+                Spacer newSet1 = superImpositor->getTMScoreset1();
+                Spacer newSet2 = superImpositor->getTMScoreset2();
+
+                spacers.push_back(newSet1);
+                spacers.push_back(newSet2);
+                savePdbOutput(spacers, "TMScore");
             }
             cout << "The TMScore value is: " << TMScore << "\n";
         }
@@ -206,10 +254,13 @@ int main(int nArgs, char* argv[]) {
             }
             superImpositor->calculateTMScore(vectorSet);
 
-            Spacer newSet1 = superImpositor->getRMSDset1();
-            Spacer newSet2 = superImpositor->getRMSDset2();
-            //            savePdbOutput(newSet1, 1);
-            //            savePdbOutput(newSet2, 2);
+            vector <Spacer> spacers;
+            Spacer newSet1 = superImpositor->getTMScoreset1();
+            Spacer newSet2 = superImpositor->getTMScoreset2();
+
+            spacers.push_back(newSet1);
+            spacers.push_back(newSet2);
+            savePdbOutput(spacers, "TMScore");
         }
 
 
@@ -225,7 +276,6 @@ void savePdbOutput(vector <Spacer> spacers, string name) {
     ofstream outFile(proteineOUTPUT.c_str());
 
     PdbSaver saveSet(outFile);
-    cout<<spacers.size();
     for (unsigned int i = 0; i < spacers.size(); i++) {
         saveSet.saveSpacer(spacers[i]);
     }

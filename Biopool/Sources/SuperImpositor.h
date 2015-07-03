@@ -52,6 +52,7 @@ namespace Victor {
             Spacer getGdtset2_2() const;
             Spacer getGdtset2_1() const;
             Spacer getGdtset1_2() const;
+            Spacer getGdtset1_1() const;
 
         private:
 
