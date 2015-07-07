@@ -8,7 +8,16 @@ using namespace Victor::Biopool;
 
 KabschMethod::KabschMethod() {
 }
-
+/**
+ * This method implement the KabschMethod method for obtein the rototraslation 
+ * that minimize the rmsd value of the rotated protein and the second protein.
+ * 
+ * @param set1Matrix (Eigen::Matrix3Xd), the 3*N matrix with the coordinate
+ * of the atom of the first protein;
+ * @param set2Matrix (Eigen::Matrix3Xd), the 3*N matrix with the coordinate
+ * of the atom of the second protein;
+ * @return Eigen::Affine3d*, the rototraslation returned by the method.
+ */
 Eigen::Affine3d* KabschMethod::rotate(Eigen::Matrix3Xd set1Matrix, Eigen::Matrix3Xd set2Matrix) const{
     Eigen::Affine3d* output = new Eigen::Affine3d();
     //Rotation Matrix

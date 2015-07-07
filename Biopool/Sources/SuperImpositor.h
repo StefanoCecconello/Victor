@@ -19,10 +19,11 @@ namespace Victor {
         class SuperImpositor {
         public:
             /**
-             * @brief Do the superimposition between two proteins.
+             * @brief Do the superimposition between two proteins using different
+             * methods of rotation. Also get back the value for different metrics, 
+             * the ranges use for the superimposition for every metrics and the 
+             * rotated protein in pdb format.
              * 
-             *  
-             *    Ulteriore spiegazione
              * */
 
             // CONSTRUCTORS/DESTRUCTOR:

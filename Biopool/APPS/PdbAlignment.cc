@@ -52,6 +52,7 @@ void savePdbOutput(vector <Spacer> spacers, string name);
 string fromAlignmentToString(std::vector<std::pair<int, int> > range);
 void saveAlignmentOutput(vector < std::vector<std::pair<int, int> > > align, string name);
 
+
 int main(int nArgs, char* argv[]) {
 
     if (getArg("h", nArgs, argv)) {
