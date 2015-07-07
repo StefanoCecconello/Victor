@@ -30,10 +30,10 @@ namespace Victor {
             virtual ~SuperImpositor();
 
             // PREDICATES:
-            double calculateRMSD();
-            double calculateMaxSub(double d, std::vector<std::pair<int, int> > vectorSet, char E);
-            double calculateGdt(std::vector<std::pair<int, int> > vectorSet);
-            double calculateTMScore(std::vector<std::pair<int, int> > vectorSet);
+            void calculateRMSD();
+            void calculateMaxSub(double d, std::vector<std::pair<int, int> > vectorSet, char E);
+            void calculateGdt(std::vector<std::pair<int, int> > vectorSet);
+            void calculateTMScore(std::vector<std::pair<int, int> > vectorSet);
 
 
 
@@ -53,25 +53,33 @@ namespace Victor {
             Spacer getGdtset2_1() const;
             Spacer getGdtset1_2() const;
             Spacer getGdtset1_1() const;
+            double getTMScoreValue() const;
+            double getGdtValue() const;
+            double getMaxsubValue() const;
+            double getRmsdValue() const;
+            std::vector<std::pair<int, int> > getTMScoreAlignment() const;
+            std::vector<std::pair<int, int> > getGdtAlignment4() const;
+            std::vector<std::pair<int, int> > getGdtAlignment3() const;
+            std::vector<std::pair<int, int> > getGdtAlignment2() const;
+            std::vector<std::pair<int, int> > getGdtAlignment1() const;
+            std::vector<std::pair<int, int> > getMaxsubAlignment() const;
 
         private:
 
             // PREDICATES:
-            double maxEvaluate(double d, std::vector<std::pair<int, int> > vectorSet, char E, Eigen::Matrix3Xd& modifyMatrixSet1, Eigen::Matrix3Xd& modifyMatrixSet2, Eigen::Affine3d* rotoTraslation);
+            double maxEvaluate(double d, std::vector<std::pair<int, int> > vectorSet, char E, Eigen::Matrix3Xd& modifyMatrixSet1, Eigen::Matrix3Xd& modifyMatrixSet2, Eigen::Affine3d*& rotoTraslation, std::vector<std::pair<int, int> >& range);
             void calculateRotation(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, Eigen::Affine3d* rotoTraslation);
 
-            void rotationApplication(Eigen::Matrix3Xd R);
-            void translationApplication(Eigen::Vector3d S);
 
             //Help function
             vgMatrix3<double> fromMatrix3XdTovgMatrix3(Eigen::Matrix3Xd matrix3Xd) const;
             Spacer fromMatrix3XdToSpacer(Eigen::Matrix3Xd matrix3Xd, int num) const;
-            Spacer rotateSpacer(Eigen::Affine3d* rotoTraslation,int num) const;
+            Spacer rotateSpacer(Eigen::Affine3d* rotoTraslation, int num) const;
             vgVector3<double> fromVector3dTovgVector3(Eigen::Vector3d Vector3d) const;
             Eigen::Vector3d fromvgVector3ToVector3d(vgVector3<double> vgVector3) const;
             Eigen::Matrix3Xd fromSpacerToMatrix3Xd(Spacer spacerSet) const;
-            std::vector<std::pair<int, int> > maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector< std::pair<int, int> > vectorSet, double d, char E, Eigen::Affine3d* rotoTraslation);
-            std::vector< std::pair<int, int> > Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd& A, Eigen::Matrix3Xd& B, double d, int L, int n, char E, Eigen::Affine3d* rotoTraslation);
+            std::vector<std::pair<int, int> > maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector< std::pair<int, int> > vectorSet, double d, char E, Eigen::Affine3d*& rotoTraslation);
+            std::vector< std::pair<int, int> > Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd& A, Eigen::Matrix3Xd& B, double d, int L, int n, char E, Eigen::Affine3d*& rotoTraslation);
 
 
             // ATTRIBUTES:
@@ -89,7 +97,7 @@ namespace Victor {
             Spacer MaxSubset1;
             //This is the Spacer of the second protein insered for  RMSD method
             Spacer MaxSubset2;
-            
+
             //This is the Spacer of the first protein insered for  RMSD method
             Spacer Gdtset1_1;
             //This is the Spacer of the second protein insered for  RMSD method
@@ -106,8 +114,8 @@ namespace Victor {
             Spacer Gdtset4_1;
             //This is the Spacer of the second protein insered for  RMSD method
             Spacer Gdtset4_2;
-            
-            
+
+
             //This is the Spacer of the first protein insered for  RMSD method
             Spacer TMScoreset1;
             //This is the Spacer of the second protein insered for  RMSD method
@@ -124,12 +132,18 @@ namespace Victor {
             double maxsubValue;
             //This is the value of the gdt between the sequences set1 and set2
             double gdtValue;
-            //This is an array that contein the alignment between the sequences set1 and set2 using rmsd method
-            int* rmsdAlignment;
+            //This is the value of the TMSCORE between the sequences set1 and set2
+            double TMScoreValue;
+
             //This is an array that contein the alignment between the sequences set1 and set2 using maxsub method
-            int* maxsubAlignment;
+            std::vector<std::pair<int, int> > maxsubAlignment;
             //This is an array that contein the alignment between the sequences set1 and set2 using gdt method
-            int* gdtAlignment;
+            std::vector<std::pair<int, int> > gdtAlignment1;
+            std::vector<std::pair<int, int> > gdtAlignment2;
+            std::vector<std::pair<int, int> > gdtAlignment3;
+            std::vector<std::pair<int, int> > gdtAlignment4;
+            //This is an array that contein the alignment between the sequences set1 and set2 using TMScore method
+            std::vector<std::pair<int, int> > TMScoreAlignment;
         };
     }
 }

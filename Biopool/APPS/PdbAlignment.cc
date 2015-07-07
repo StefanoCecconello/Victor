@@ -19,12 +19,9 @@ using namespace Victor::Biopool;
 
 
 //TODO:
-//-CONTROLLARE NELLE REGOLE DEL PROGETTO COME LEGGERE GLI INPUT
-//-CONTROLLARE SE VUOLE SEMPRE TUTTI GLI OUTPUT O SOLO UN METODO RICHIESTO
-//-CHIEDERE SE VA BENE L' APPROSSIMAZIONE OTTENUTA DI 10^-2 PER GDT E TMSCORE o chiedere come si implementa (tipo per l'erase)+ chiedi se basta test per le 4 funz principali
-//-STAMPARE IL PDF PER OGNI METODO, prima + seconda proteina una modificata
-//-SCRIVERE la documentazione
 //-SCRIVERE TEST
+//-SCRIVERE la documentazione
+//-SCRIVERE WIKI
 //
 
 void sShowHelp() {
@@ -52,6 +49,8 @@ void sShowHelp() {
 }
 
 void savePdbOutput(vector <Spacer> spacers, string name);
+string fromAlignmentToString(std::vector<std::pair<int, int> > range);
+void saveAlignmentOutput(vector < std::vector<std::pair<int, int> > > align, string name);
 
 int main(int nArgs, char* argv[]) {
 
@@ -88,20 +87,32 @@ int main(int nArgs, char* argv[]) {
         ifstream inFile2(inputFile[1].c_str());
 
         // creates the PdbLoader objects
-        PdbLoader pl1(inFile1);
-        PdbLoader pl2(inFile2);
+        PdbLoader pl1(inFile1, false, false, false, false, true);
+        PdbLoader pl2(inFile2, false, false, false, false, true);
 
         Protein* prot1 = new Protein();
         Protein* prot2 = new Protein();
 
+        pl1.setNoVerbose();
+        pl2.setNoVerbose();
+        pl1.setNoHAtoms();
+        pl2.setNoHAtoms();
+
         prot1->load(pl1);
         prot2->load(pl2);
+
+        string proteineOUTPUT = "output.pdb";
+        ofstream outFile(proteineOUTPUT.c_str());
+
+        PdbSaver saveSet(outFile);
+        saveSet.saveSpacer(*(prot1->getSpacer((unsigned int) 0)));
+
 
         SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, rotationMethod);
 
         if (rmsd) {
-            double rmsd = superImpositor->calculateRMSD();
-
+            superImpositor->calculateRMSD();
+            double rmsd = superImpositor->getRmsdValue();
             if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
                 vector <Spacer> spacers;
                 Spacer newSet1 = superImpositor->getRMSDset1();
@@ -131,13 +142,19 @@ int main(int nArgs, char* argv[]) {
             for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
                 vectorSet.push_back(std::make_pair(i, i));
             }
-            double maxSub = superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
+            superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
+            double maxSub = superImpositor->getMaxsubValue();
+
+            std::vector<std::pair<int, int> > range;
+            range = superImpositor->getMaxsubAlignment();
+            vector < std::vector<std::pair<int, int> > > align;
+            align.push_back(range);
+            saveAlignmentOutput(align, "maxsub");
 
             if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
                 vector <Spacer> spacers;
                 Spacer newSet1 = superImpositor->getMaxSubset1();
                 Spacer newSet2 = superImpositor->getMaxSubset2();
-
                 spacers.push_back(newSet1);
                 spacers.push_back(newSet2);
                 savePdbOutput(spacers, "maxsub");
@@ -167,7 +184,25 @@ int main(int nArgs, char* argv[]) {
             for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
                 vectorSet.push_back(std::make_pair(i, i));
             }
-            double gdt = superImpositor->calculateGdt(vectorSet);
+            superImpositor->calculateGdt(vectorSet);
+            double gdt = superImpositor->getGdtValue();
+
+            std::vector<std::pair<int, int> > range1;
+            std::vector<std::pair<int, int> > range2;
+            std::vector<std::pair<int, int> > range3;
+            std::vector<std::pair<int, int> > range4;
+            range1 = superImpositor->getGdtAlignment1();
+            range2 = superImpositor->getGdtAlignment2();
+            range3 = superImpositor->getGdtAlignment3();
+            range4 = superImpositor->getGdtAlignment4();
+
+            vector < std::vector<std::pair<int, int> > > align;
+            align.push_back(range1);
+            align.push_back(range2);
+            align.push_back(range3);
+            align.push_back(range4);
+            saveAlignmentOutput(align, "gdt");
+
             if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
                 vector <Spacer> spacers;
                 Spacer newSet1 = superImpositor->getGdtset1_1();
@@ -190,7 +225,7 @@ int main(int nArgs, char* argv[]) {
                 spacers.push_back(newSet6);
                 spacers.push_back(newSet7);
                 spacers.push_back(newSet8);
-                //savePdbOutput(spacers, "gdt");
+                savePdbOutput(spacers, "gdt");
             }
             cout << "The gdt value is: " << gdt << "\n";
         }
@@ -233,7 +268,15 @@ int main(int nArgs, char* argv[]) {
             for (unsigned int i = 0; i < superImpositor->getSet1()->size(); i++) {
                 vectorSet.push_back(std::make_pair(i, i));
             }
-            double TMScore = superImpositor->calculateTMScore(vectorSet);
+            superImpositor->calculateTMScore(vectorSet);
+            double TMScore = superImpositor->getTMScoreValue();
+
+            std::vector<std::pair<int, int> > range;
+            range = superImpositor->getTMScoreAlignment();
+            vector < std::vector<std::pair<int, int> > > align;
+            align.push_back(range);
+            saveAlignmentOutput(align, "TMScore");
+
             if (!(rmsdOutput || maxsubOutput || gdtOutput || tmscoreOutput)) {
                 vector <Spacer> spacers;
                 Spacer newSet1 = superImpositor->getTMScoreset1();
@@ -279,4 +322,31 @@ void savePdbOutput(vector <Spacer> spacers, string name) {
     for (unsigned int i = 0; i < spacers.size(); i++) {
         saveSet.saveSpacer(spacers[i]);
     }
+}
+
+void saveAlignmentOutput(vector < std::vector<std::pair<int, int> > > align, string name) {
+    string proteineOUTPUT = name + "AlignmentOutput";
+    ofstream outFile(proteineOUTPUT.c_str());
+
+    for (unsigned int i = 0; i < align.size(); i++) {
+        outFile << fromAlignmentToString(align[i]);
+    }
+}
+
+string fromAlignmentToString(std::vector<std::pair<int, int> > range) {
+    string String;
+
+    string str1;
+    string str2;
+    for (unsigned int i = 0; i < range.size(); i++) {
+        stringstream ss1;
+        stringstream ss2;
+        ss1 << range[i].first;
+        ss2 << range[i].second;
+        str1 = ss1.str();
+        str2 = ss2.str();
+        String = String + "(" + str1 + "," + str2 + ")\n";
+    }
+    String = String + "\n";
+    return String;
 }

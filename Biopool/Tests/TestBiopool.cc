@@ -13,6 +13,9 @@
 #include <TestGroup.h>
 #include <TestAminoAcid.h>
 #include <TestSpacer.h>
+#include <TestSuperImpositor.h>
+
+
 using namespace std;
 
 
@@ -24,6 +27,7 @@ int main() {
         runner.addTest(TestGroup::suite());
         runner.addTest(TestAminoAcid::suite());
         runner.addTest(TestSpacer::suite());
+        runner.addTest(TestSuperImpositor::suite());
 	cout<< "Running the unit tests."<<endl;
 	runner.run();
 
