@@ -13,6 +13,8 @@ using namespace Victor;
 using namespace Victor::Biopool;
 
 /**
+ * This is the constructor for the superImpositor object. It sets the indicated 
+ * method for the rotation and save the proteins where he has to work on.
  *  
  * @param prot1 (Protein*) , the first protein in input;
  * @param prot2 (Protein*), the second protein in input;
@@ -49,14 +51,14 @@ SuperImpositor::~SuperImpositor() {
 }
 
 /**
- *  Calculate RMSD value between the two protein give in the constructor.
+ *  Calculates RMSD value between the two proteins given in the constructor.
  */
 void SuperImpositor::calculateRMSD() {
     if (rmsdValue == 999) {
         Eigen::Matrix3Xd modifyMatrixSet1 = matrixSet1;
         Eigen::Matrix3Xd modifyMatrixSet2 = matrixSet2;
         Eigen::Affine3d* rotoTraslation = rotationAlgorith->rotate(modifyMatrixSet1, modifyMatrixSet2);
-        calculateRotation(modifyMatrixSet1, modifyMatrixSet2, rotoTraslation);
+        calculateRotation(modifyMatrixSet1, rotoTraslation);
         RMSDset1 = rotateSpacer(rotoTraslation, 1);
         //RMSDset2 = rotateSpacer(rotoTraslation, 2);
         //RMSDset1 = fromMatrix3XdToSpacer(modifyMatrixSet1, 1);
@@ -74,10 +76,14 @@ void SuperImpositor::calculateRMSD() {
 }
 
 /**
- * Calculate MaxSub value between the two protein give in the constructor.
+ * Calculates MaxSub value between the two proteins given in the constructor.
  * 
- * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain 
- * the couples of aligned position of the two AA of structures in input. 
+ * @param d (double), the threshold for the maximum distance, between two atoms,
+ * accepted during the research;
+ * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain
+ * the couples of aligned position of the two structures in input;
+ * @param E (char), a parameter for decide if the atoms over the distance d have 
+ * to be deleted in the research of the best structure.
  */
 void SuperImpositor::calculateMaxSub(double d, std::vector<std::pair<int, int> > vectorSet, char E) {
     if (maxsubValue == 999) {
@@ -95,10 +101,10 @@ void SuperImpositor::calculateMaxSub(double d, std::vector<std::pair<int, int> >
 }
 
 /**
- * Calculate Gdt value between the two protein give in the constructor.
+ * Calculates Gdt value between the two proteins given in the constructor.
  * 
- * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain 
- * the couples of aligned position of the two AA of structures in input. 
+ * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain
+ * the couples of aligned position of the two structures in input.
  */
 void SuperImpositor::calculateGdt(std::vector<std::pair<int, int> > vectorSet) {
     if (gdtValue == 999) {
@@ -144,10 +150,10 @@ void SuperImpositor::calculateGdt(std::vector<std::pair<int, int> > vectorSet) {
 }
 
 /**
- * Calculate TMScore value between the two protein give in the constructor.
+ * Calculates TMScore value between the two proteins given in the constructor.
  * 
- * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain 
- * the couples of aligned position of the two AA of structures in input. 
+ * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain
+ * the couples of aligned position of the two structures in input.
  */
 void SuperImpositor::calculateTMScore(std::vector<std::pair<int, int> > vectorSet) {
     if (TMScoreValue == 999) {
@@ -167,11 +173,12 @@ void SuperImpositor::calculateTMScore(std::vector<std::pair<int, int> > vectorSe
 }
 
 /**
- * Calculate a value for indicate the quality of the superimposition found.
+ * Calculates a value for indicate the quality of the superimposition found.
  * 
- * @param d (double), the threshold for the maximum distance accepted during the research;
- * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain 
- * the couples of aligned position of the AA of the input structures;
+ * @param d (double), the threshold for the maximum distance, between two atoms,
+ * accepted during the research
+ * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain
+ * the couples of aligned position of the two structures in input;
  * @param E (char), a parameter for decide if the atoms over the distance d have 
  * to be deleted in the research of the best structure;
  * @param modifyMatrixSet1 (Eigen::Matrix3Xd&), the 3*N matrix with the coordinate
@@ -201,19 +208,20 @@ double SuperImpositor::maxEvaluate(double d, std::vector<std::pair<int, int> > v
 }
 
 /**
- * The algorithm for found the best superimposition between he two input protein.
+ * The algorithm for find the best superimposition between he two input protein.
  * 
  * @param firstSet (Eigen::Matrix3Xd&), the 3*N matrix with the coordinate
  * of the atom of the first protein;
  * @param secondSet (Eigen::Matrix3Xd&), the 3*N matrix with the coordinate
  * of the atom of the second protein;
- * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain 
- * the couples of aligned position of the AA of the input structures;
- * @param d (double), the threshold for the maximum distance accepted during the research;
+ * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain
+ * the couples of aligned position of the two structures in input;
+ * @param d (double), the threshold for the maximum distance, between two atoms,
+ * accepted during the research
  * @param E (char), a parameter for decide if the atoms over the distance d have 
  * to be deleted in the research of the best structure;
  * @param rotoTraslation (Eigen::Affine3d*&), a reference for return the final 
- * rotation matrix and translation vector;
+ * rotation matrix and translation vector.
  * 
  * @return std::vector<std::pair<int, int> > the couples representing the finally best
  * superimposition found.
@@ -258,25 +266,25 @@ std::vector<std::pair<int, int> > SuperImpositor::maxSubAlignment(Eigen::Matrix3
 }
 
 /**
- * The algorithm for found the best superimposition between he two input protein.
+ * The algorithm for find the best superimposition between the two input protein.
  * 
  * @param M (std::vector<std::pair<int, int> >), a reference for return the actually
- * vector containing the couples of aligned position of the two AA of the input
- * structures;
- * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain all 
- * the couples of aligned position of the AA of the input structures;
+ * vector containing a subset of vectorSet;
+ * @param vectorSet (std::vector<std::pair<int, int> >), the vector that contain
+ * the couples of aligned position of the two structures in input;
  * @param A (Eigen::Matrix3Xd&), the 3*N matrix with the coordinate
  * of the atom of the first protein;
  * @param B (Eigen::Matrix3Xd&), the 3*N matrix with the coordinate
  * of the atom of the second protein;
- * @param d (double), the threshold for the maximum distance accepted during the research;
+ * @param d (double), the threshold for the maximum distance, between two atoms,
+ * accepted during the research
  * @param L (double), the number of minimum amino acids that the algorithm need to
  * found;
  * @param n (double), the number of atoms in the proteins;
  * @param E (char), a parameter for decide if the atoms over the distance d have 
  * to be deleted in the research of the best structure;
  * @param rotoTraslation (Eigen::Affine3d*&), a reference for return the final 
- * rotation matrix and translation vector;
+ * rotation matrix and translation vector.
  * 
  * @return std::vector<std::pair<int, int> > the couples representing the actually best
  * superimposition found.
@@ -302,7 +310,7 @@ std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<
         ARototrasled = A;
         BRototrasled = B;
         rotoTraslation = rotationAlgorith->rotate(M1, M2);
-        calculateRotation(ARototrasled, BRototrasled, rotoTraslation);
+        calculateRotation(ARototrasled, rotoTraslation);
 
         //Calculate the distance between the points
 
@@ -331,7 +339,7 @@ std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<
 
     rotoTraslation = rotationAlgorith->rotate(M1, M2);
 
-    calculateRotation(A, B, rotoTraslation);
+    calculateRotation(A, rotoTraslation);
 
     //Calculate the distance between the points
     M = N;
@@ -351,17 +359,16 @@ std::vector< std::pair<int, int> > SuperImpositor::Extend(std::vector<std::pair<
 }
 
 /**
- * This method modify the input matrixes applying the rotation and the translation.
+ * This method modifies the input matrix applying on this the rotation and the 
+ * translation.
  * 
  * @param firstSet (Eigen::Matrix3Xd&), the 3*N matrix with the coordinate
  * of the atom of the first protein;
- * @param secondSet (Eigen::Matrix3Xd&), the 3*N matrix with the coordinate
- * of the atom of the second protein;
  * @param rotoTraslation (Eigen::Affine3d*&), a reference for return the final 
- * rotation matrix and translation vector;
+ * rotation matrix and translation vector.
  * 
  */
-void SuperImpositor::calculateRotation(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, Eigen::Affine3d* rotoTraslation) {
+void SuperImpositor::calculateRotation(Eigen::Matrix3Xd& firstSet, Eigen::Affine3d* rotoTraslation) {
     Eigen::Matrix3Xd R = rotoTraslation->linear();
     Eigen::Vector3d S = rotoTraslation->translation();
     //Apply the rototraslation
@@ -375,10 +382,10 @@ void SuperImpositor::calculateRotation(Eigen::Matrix3Xd& firstSet, Eigen::Matrix
 }
 
 /**
- * This is a converting method from get a Matrix3Xd from a spacer. The final matrix
- * content is the 3D coords originally present in the spacer.
+ * This is a converting method for get a Matrix3Xd from a spacer. The final matrix
+ * content is the 3D coordinates originally present in the spacer.
  * 
- * @param spacerSet (spacer), the spacer that need to be convert.
+ * @param spacerSet (spacer), the spacer that need to be converted.
  * 
  * @return Eigen::Matrix3Xd, the output Matrix3Xd.
  */
@@ -402,7 +409,15 @@ Eigen::Matrix3Xd SuperImpositor::fromSpacerToMatrix3Xd(Spacer spacerSet) const {
     return matrixSet;
 }
 
-
+/**
+ * This is a converting method for get a vgMatrix3 from a Matrix3Xd. The final matrix
+ * content is the 3D coordinates originally present in the input matrix. The method
+ * take in input 3*3 matrices.
+ * 
+ * @param matrix3Xd (Eigen::Matrix3Xd), the matrix that need to be converted.
+ * 
+ * @return vgMatrix3<double>, the output vgMatrix3.
+ */
 vgMatrix3<double> SuperImpositor::fromMatrix3XdTovgMatrix3(Eigen::Matrix3Xd matrix3Xd) const {
     //Conversion from Matrix3Xd to vgMatrix3
     vgMatrix3<double> rotationMatrix;
@@ -419,6 +434,18 @@ vgMatrix3<double> SuperImpositor::fromMatrix3XdTovgMatrix3(Eigen::Matrix3Xd matr
     return rotationMatrix;
 }
 
+/**
+ * This is a converting method for get a spacer from a Matrix3Xd. The final spacer
+ * content is the 3D coordinates originally present in the Matrix3Xd. The dimension
+ * of the input matrix and the output matrix are the same of the spacer given in input 
+ * to the constructor.
+ * 
+ * @param matrix3Xd (Eigen::Matrix3Xd matrix3Xd), the matrix that need to be converted;
+ * @param num (int), the number of the spacer given in input to the constructor 
+ * that need to be used how base for the new spacer.
+ * 
+ * @return spacer, the output spacer.
+ */
 Spacer SuperImpositor::fromMatrix3XdToSpacer(Eigen::Matrix3Xd matrix3Xd, int num) const {
     //Change atoms coordinates of set1
     Spacer newSpacer;
@@ -433,6 +460,17 @@ Spacer SuperImpositor::fromMatrix3XdToSpacer(Eigen::Matrix3Xd matrix3Xd, int num
     return newSpacer;
 }
 
+/**
+ * This method apply the rototraslation given in input to the original spacers given in
+ * input to the constructor. The spacer is selected by the second parameter.
+ * 
+ * @param otoTraslation (Eigen::Affine3d*d), the rotation matrix and the translation 
+ * vector;
+ * @param num (int), the number of the spacer given in input to the constructor 
+ * that need to be used how base for the new spacer.
+ * 
+ * @return spacer, the output spacer.
+ */
 Spacer SuperImpositor::rotateSpacer(Eigen::Affine3d* rotoTraslation, int num) const {
     //Change atoms coordinates of set1
     Spacer newSpacer1;
@@ -465,47 +503,29 @@ Spacer SuperImpositor::rotateSpacer(Eigen::Affine3d* rotoTraslation, int num) co
         AminoAcid& AA = newModifySpacer.getAmino(i);
         for (unsigned int j = 0; j < contAtom; j++) {
             coords = fromvgVector3ToVector3d(atoms[j].getCoords());
-            //            if (i == 0) {
-            //                cout << coords << "\n" << "\n";
-            //            }
             newCoords = R * coords + S;
-            //            if (i == 0) {
-            //                cout << newCoords << "\n" << "\n";
-            //            }
             AA[j].setCoords(fromVector3dTovgVector3(newCoords));
         }
-        //        if (i == 0) {
-        //            cout << "\n" << "\n";
-        //            cout << atoms.size();
-        //            cout << "\n" << "\n";
-        //            cout << "INIZIO\n";
-        //        }
 
         atoms = newSpacer2.getAmino(i).getSideChain().giveAtoms();
 
-        //        if (i == 0) {
-        //            cout << "\n" << "\n";
-        //            cout << atoms.size();
-        //            cout << "\n" << "\n";
-        //        }
         for (unsigned int j = 0; j < atoms.size(); j++) {
             coords = fromvgVector3ToVector3d(atoms[j].getCoords());
-            //            if (i == 0) {
-            //                cout << coords << "\n" << "\n";
-            //            }
             newCoords = R * coords + S;
-            //            if (i == 0) {
-            //                cout << newCoords << "\n" << "\n";
-            //            }
             AA[j + contAtom].setCoords(fromVector3dTovgVector3(newCoords));
         }
-        //        if (i == 0) {
-        //            cout << "FINE\n";
-        //        }
     }
     return newModifySpacer;
 }
 
+/**
+ * This is a converting method for get a vgVector3 from a Eigen::Vector3d<double>. 
+ * These are 3*1 vectors.
+ * 
+ * @param Vector3d (Eigen::Vector3d), the vector that need to be converted.
+ * 
+ * @return vgVector3, the output vector.
+ */
 vgVector3<double> SuperImpositor::fromVector3dTovgVector3(Eigen::Vector3d Vector3d) const {
     vgVector3<double> traslationVector;
     for (int r = 0; r < 3; r++) {
@@ -514,6 +534,14 @@ vgVector3<double> SuperImpositor::fromVector3dTovgVector3(Eigen::Vector3d Vector
     return traslationVector;
 }
 
+/**
+ * This is a converting method for get a Eigen::Vector3d from a vgVector3<double>. 
+ * These are 3*1 vectors.
+ * 
+ * @param vgVector3 (vgVector3<double>), the vector that need to be converted.
+ * 
+ * @return Eigen::Vector3d, the output vector.
+ */
 Eigen::Vector3d SuperImpositor::fromvgVector3ToVector3d(vgVector3<double> vgVector3) const {
     Eigen::Vector3d newVector;
     newVector(0) = vgVector3[0];

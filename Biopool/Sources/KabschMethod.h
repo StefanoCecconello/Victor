@@ -7,6 +7,10 @@
 namespace Victor {
     namespace Biopool {
 
+        /**@brief Implementation of the kabsch method for find the optimal 
+         * rotoslation for superimpose two molecules.
+         * 
+         * */
         class KabschMethod:public Rotator{
         public:
 

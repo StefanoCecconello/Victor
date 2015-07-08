@@ -10,21 +10,21 @@
 
 #include "Protein.h"
 #include <KabschMethod.h>
-#include "Eigen/Geometry"
+#include <Eigen/Geometry>
 #include <vector>
 
 namespace Victor {
     namespace Biopool {
 
+        /**
+         * @brief Do the superimposition between two proteins using different
+         * methods of rotation. Also get back the value for different metrics, 
+         * the ranges use for the superimposition for every metrics and the 
+         * rotated protein in pdb format.
+         * 
+         * */
         class SuperImpositor {
         public:
-            /**
-             * @brief Do the superimposition between two proteins using different
-             * methods of rotation. Also get back the value for different metrics, 
-             * the ranges use for the superimposition for every metrics and the 
-             * rotated protein in pdb format.
-             * 
-             * */
 
             // CONSTRUCTORS/DESTRUCTOR:
             SuperImpositor(Protein* firstProtein, Protein* secondProtein, string method);
@@ -65,11 +65,15 @@ namespace Victor {
             std::vector<std::pair<int, int> > getGdtAlignment1() const;
             std::vector<std::pair<int, int> > getMaxsubAlignment() const;
 
+            //Help function
+            static void calculateRotation(Eigen::Matrix3Xd& firstSet, Eigen::Affine3d* rotoTraslation);
         private:
 
             // PREDICATES:
+
             double maxEvaluate(double d, std::vector<std::pair<int, int> > vectorSet, char E, Eigen::Matrix3Xd& modifyMatrixSet1, Eigen::Matrix3Xd& modifyMatrixSet2, Eigen::Affine3d*& rotoTraslation, std::vector<std::pair<int, int> >& range);
-            void calculateRotation(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, Eigen::Affine3d* rotoTraslation);
+            std::vector<std::pair<int, int> > maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector< std::pair<int, int> > vectorSet, double d, char E, Eigen::Affine3d*& rotoTraslation);
+            std::vector< std::pair<int, int> > Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd& A, Eigen::Matrix3Xd& B, double d, int L, int n, char E, Eigen::Affine3d*& rotoTraslation);
 
 
             //Help function
@@ -79,47 +83,45 @@ namespace Victor {
             vgVector3<double> fromVector3dTovgVector3(Eigen::Vector3d Vector3d) const;
             Eigen::Vector3d fromvgVector3ToVector3d(vgVector3<double> vgVector3) const;
             Eigen::Matrix3Xd fromSpacerToMatrix3Xd(Spacer spacerSet) const;
-            std::vector<std::pair<int, int> > maxSubAlignment(Eigen::Matrix3Xd& firstSet, Eigen::Matrix3Xd& secondSet, std::vector< std::pair<int, int> > vectorSet, double d, char E, Eigen::Affine3d*& rotoTraslation);
-            std::vector< std::pair<int, int> > Extend(std::vector<std::pair<int, int> > M, std::vector<std::pair<int, int> > vectorSet, Eigen::Matrix3Xd& A, Eigen::Matrix3Xd& B, double d, int L, int n, char E, Eigen::Affine3d*& rotoTraslation);
 
 
             // ATTRIBUTES:
             // This is the rotation algorithm chose for this superImpositor
             Rotator* rotationAlgorith;
-            //This is the Spacer of the first protein insered
+            //This is the Spacer of the first protein in input
             Spacer* set1;
-            //This is the Spacer of the second protein insered
+            //This is the Spacer of the second protein in input
             Spacer* set2;
-            //This is the Spacer of the first protein insered for  RMSD method
+            //This is the Spacer of the first protein in input for  RMSD method
             Spacer RMSDset1;
-            //This is the Spacer of the second protein insered for  RMSD method
+            //This is the Spacer of the second protein in input for  RMSD method
             Spacer RMSDset2;
-            //This is the Spacer of the first protein insered for  RMSD method
+            //This is the Spacer of the first protein in input for  RMSD method
             Spacer MaxSubset1;
-            //This is the Spacer of the second protein insered for  RMSD method
+            //This is the Spacer of the second protein in input for  RMSD method
             Spacer MaxSubset2;
 
-            //This is the Spacer of the first protein insered for  RMSD method
+            //This is the Spacer of the first protein in input for  RMSD method
             Spacer Gdtset1_1;
-            //This is the Spacer of the second protein insered for  RMSD method
+            //This is the Spacer of the second protein in input for  RMSD method
             Spacer Gdtset1_2;
-            //This is the Spacer of the first protein insered for  RMSD method
+            //This is the Spacer of the first protein in input for  RMSD method
             Spacer Gdtset2_1;
-            //This is the Spacer of the second protein insered for  RMSD method
+            //This is the Spacer of the second protein in input for  RMSD method
             Spacer Gdtset2_2;
-            //This is the Spacer of the first protein insered for  RMSD method
+            //This is the Spacer of the first protein in input for  RMSD method
             Spacer Gdtset3_1;
-            //This is the Spacer of the second protein insered for  RMSD method
+            //This is the Spacer of the second protein in input for  RMSD method
             Spacer Gdtset3_2;
-            //This is the Spacer of the first protein insered for  RMSD method
+            //This is the Spacer of the first protein in input for  RMSD method
             Spacer Gdtset4_1;
-            //This is the Spacer of the second protein insered for  RMSD method
+            //This is the Spacer of the second protein in input for  RMSD method
             Spacer Gdtset4_2;
 
 
-            //This is the Spacer of the first protein insered for  RMSD method
+            //This is the Spacer of the first protein in input for  RMSD method
             Spacer TMScoreset1;
-            //This is the Spacer of the second protein insered for  RMSD method
+            //This is the Spacer of the second protein in input for  RMSD method
             Spacer TMScoreset2;
             //This is a matrix that contain all the coords of the CA atoms in set1
             Eigen::Matrix3Xd matrixSet1;
@@ -136,14 +138,14 @@ namespace Victor {
             //This is the value of the TMSCORE between the sequences set1 and set2
             double TMScoreValue;
 
-            //This is an array that contein the alignment between the sequences set1 and set2 using maxsub method
+            //This is an array that contain the alignment between the sequences set1 and set2 using maxsub method
             std::vector<std::pair<int, int> > maxsubAlignment;
-            //This is an array that contein the alignment between the sequences set1 and set2 using gdt method
+            //This is an array that contain the alignment between the sequences set1 and set2 using gdt method
             std::vector<std::pair<int, int> > gdtAlignment1;
             std::vector<std::pair<int, int> > gdtAlignment2;
             std::vector<std::pair<int, int> > gdtAlignment3;
             std::vector<std::pair<int, int> > gdtAlignment4;
-            //This is an array that contein the alignment between the sequences set1 and set2 using TMScore method
+            //This is an array that contain the alignment between the sequences set1 and set2 using TMScore method
             std::vector<std::pair<int, int> > TMScoreAlignment;
         };
     }

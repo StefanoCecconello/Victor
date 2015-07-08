@@ -7,6 +7,9 @@
 namespace Victor {
     namespace Biopool {
 
+        /**@brief Abstract class for the different types of rotation methods.
+         * 
+         * */
         class Rotator {
         public:
             // CONSTRUCTORS/DESTRUCTOR:

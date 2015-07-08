@@ -40,12 +40,14 @@ public:
         suiteOfTests->addTest(new CppUnit::TestCaller<TestSuperImpositor>("Test2 - calculate maxsub.",
                 &TestSuperImpositor::testTestSuperImpositor_B));
 
-        suiteOfTests->addTest(new CppUnit::TestCaller<TestSuperImpositor>("Test2 - calculate maxsub.",
+        suiteOfTests->addTest(new CppUnit::TestCaller<TestSuperImpositor>("Test3 - calculate maxsub.",
                 &TestSuperImpositor::testTestSuperImpositor_C));
 
-        suiteOfTests->addTest(new CppUnit::TestCaller<TestSuperImpositor>("Test2 - calculate maxsub.",
+        suiteOfTests->addTest(new CppUnit::TestCaller<TestSuperImpositor>("Test4 - calculate maxsub.",
                 &TestSuperImpositor::testTestSuperImpositor_D));
 
+        suiteOfTests->addTest(new CppUnit::TestCaller<TestSuperImpositor>("Test5 - calculate rotation.",
+                &TestSuperImpositor::testTestSuperImpositor_E));
 
         return suiteOfTests;
     }
@@ -206,5 +208,26 @@ protected:
         CPPUNIT_ASSERT(((TMScore < 0.7408) + 0.1) && (TMScore > (0.7408 - 0.1)));
     }
 
+    void testTestSuperImpositor_E() {
+        Eigen::Matrix3Xd set1(3, 2);
 
+        set1(0, 0) = 1;
+        set1(0, 1) = 2;
+        set1(1, 0) = 0;
+        set1(1, 1) = 0;
+        set1(2, 0) = 0;
+        set1(2, 1) = 0;
+
+        Eigen::Affine3d* input = new Eigen::Affine3d();
+        Eigen::Matrix3d I = Eigen::Matrix3d::Identity(3, 3);
+        I(0, 0) = -1;
+        input->linear() = I;
+        input->translation() = Eigen::Vector3d::Zero();
+        SuperImpositor::calculateRotation(set1, input);
+        cout << "\n\nThe rototransled coordinates are:\n";
+        cout << set1(0, 0) << "," << set1(0, 1) << "\n";
+        cout << set1(1, 0) << "," << set1(1, 1) << "\n";
+        cout << set1(2, 0) << "," << set1(2, 1) << "\n";
+        CPPUNIT_ASSERT(set1(0, 0) == -1 && set1(0, 1) == -2 && set1(1, 0) == 0 && set1(1, 1) == 0 && set1(2, 0) == 0 && set1(2, 1) == 0);
+    }
 };

@@ -14,10 +14,9 @@
 #include <TestAminoAcid.h>
 #include <TestSpacer.h>
 #include <TestSuperImpositor.h>
-
+#include <TestKabschMethod.h>
 
 using namespace std;
-
 
 int main() {
 	CppUnit::TextUi::TestRunner runner;
@@ -28,6 +27,7 @@ int main() {
         runner.addTest(TestAminoAcid::suite());
         runner.addTest(TestSpacer::suite());
         runner.addTest(TestSuperImpositor::suite());
+        runner.addTest(TestKabschMethod::suite());
 	cout<< "Running the unit tests."<<endl;
 	runner.run();
 

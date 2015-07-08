@@ -1,5 +1,5 @@
 #include <KabschMethod.h>
-#include "Eigen/Geometry"
+#include <Eigen/Geometry>
 
 using namespace Victor;
 using namespace Victor::Biopool;

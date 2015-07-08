@@ -1,0 +1,10 @@
+PFRMAT TS
+TARGET T0760
+MODEL 1
+PARENT N/A
+ATOM      1  N   MET     1      0  0 0 1.00 17.94              
+ATOM      1  CA   MET     1      1  0 0  1.00 17.94              
+ATOM      1  C   MET     1      1  1 0  1.00 17.94              
+ATOM      1  0   MET     1      0  1 0  1.00 17.94              
+TER
+END
