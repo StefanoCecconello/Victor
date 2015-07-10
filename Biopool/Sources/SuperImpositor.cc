@@ -384,16 +384,11 @@ void SuperImpositor::calculateRotation(Eigen::Matrix3Xd& firstSet, Eigen::Affine
  */
 Eigen::Matrix3Xd SuperImpositor::fromSpacerToMatrix3Xd(Spacer spacerSet) const {
     int NumAmino = (int) spacerSet.sizeAmino();
-    Atom CAAtoms[NumAmino];
     Eigen::Matrix3Xd matrixSet(3, NumAmino);
 
-    for (int i = 0; i < NumAmino; i++) {
-        CAAtoms[i] = spacerSet.getAmino(i)[CA];
-    }
 
     for (int col = 0; col < NumAmino; col++) {
-
-        vgVector3<double> coords = CAAtoms[col].getCoords();
+        vgVector3<double> coords = spacerSet.getAmino(col)[CA].getCoords();
         matrixSet(0, col) = coords[0];
         matrixSet(1, col) = coords[1];
         matrixSet(2, col) = coords[2];
