@@ -1,8 +1,8 @@
 #ifndef ROTATOR_H
 #define ROTATOR_H
 
-#include <Eigen/Geometry>
 #include <Spacer.h>
+#include <eigen3/Eigen/Geometry>
 
 namespace Victor {
     namespace Biopool {

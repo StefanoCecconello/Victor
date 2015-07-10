@@ -1,16 +1,9 @@
-/* 
- * File:   superImpositor.h
- * Author: cecco
- *
- * Created on June 8, 2015, 4:22 PM
- */
-
 #ifndef SUPERIMPOSITOR_H
 #define	SUPERIMPOSITOR_H
 
 #include "Protein.h"
 #include <KabschMethod.h>
-#include <Eigen/Geometry>
+#include <eigen3/Eigen/Geometry>
 #include <vector>
 
 namespace Victor {

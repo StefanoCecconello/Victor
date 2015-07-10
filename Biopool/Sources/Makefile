@@ -20,7 +20,7 @@ LIBS = -lEnergy -lTorsion -ltools
 
 LIB_PATH = -L.
 
-INC_PATH = -I.   -I../../tools -I Eigen
+INC_PATH = -I.   -I../../tools
 
 #
 # Objects and headers

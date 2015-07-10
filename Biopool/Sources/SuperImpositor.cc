@@ -1,10 +1,3 @@
-/* 
- * File:   superImpositor.cc
- * Author: cecco
- * 
- * Created on June 8, 2015, 4:22 PM
- */
-
 #include "SuperImpositor.h"
 #include <math.h>
 #include <vector>
@@ -390,7 +383,7 @@ void SuperImpositor::calculateRotation(Eigen::Matrix3Xd& firstSet, Eigen::Affine
  * @return Eigen::Matrix3Xd, the output Matrix3Xd.
  */
 Eigen::Matrix3Xd SuperImpositor::fromSpacerToMatrix3Xd(Spacer spacerSet) const {
-    int NumAmino = spacerSet.sizeAmino();
+    int NumAmino = (int) spacerSet.sizeAmino();
     Atom CAAtoms[NumAmino];
     Eigen::Matrix3Xd matrixSet(3, NumAmino);
 

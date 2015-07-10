@@ -1,10 +1,3 @@
-/* 
- * File:   main.cc
- * Author: cecco
- *
- * Created on May 29, 2015, 4:18 PM
- */
-
 #include <cstdlib>
 #include <SuperImpositor.h>
 #include <PdbLoader.h>
@@ -102,12 +95,6 @@ int main(int nArgs, char* argv[]) {
         prot1->load(pl1);
         prot2->load(pl2);
 
-        string proteineOUTPUT = "output.pdb";
-        ofstream outFile(proteineOUTPUT.c_str());
-
-        PdbSaver saveSet(outFile);
-        saveSet.saveSpacer(*(prot1->getSpacer((unsigned int) 0)));
-
 
         SuperImpositor* superImpositor = new SuperImpositor(prot1, prot2, rotationMethod);
 
@@ -171,6 +158,13 @@ int main(int nArgs, char* argv[]) {
             }
             superImpositor->calculateMaxSub(3.5, vectorSet, 'y');
 
+            std::vector<std::pair<int, int> > range;
+            range = superImpositor->getMaxsubAlignment();
+            vector < std::vector<std::pair<int, int> > > align;
+            align.push_back(range);
+            saveAlignmentOutput(align, "maxsub");
+            
+            
             vector <Spacer> spacers;
             Spacer newSet1 = superImpositor->getMaxSubset1();
             Spacer newSet2 = superImpositor->getMaxSubset2();
@@ -239,6 +233,24 @@ int main(int nArgs, char* argv[]) {
             }
             superImpositor->calculateGdt(vectorSet);
 
+            
+            std::vector<std::pair<int, int> > range1;
+            std::vector<std::pair<int, int> > range2;
+            std::vector<std::pair<int, int> > range3;
+            std::vector<std::pair<int, int> > range4;
+            range1 = superImpositor->getGdtAlignment1();
+            range2 = superImpositor->getGdtAlignment2();
+            range3 = superImpositor->getGdtAlignment3();
+            range4 = superImpositor->getGdtAlignment4();
+
+            vector < std::vector<std::pair<int, int> > > align;
+            align.push_back(range1);
+            align.push_back(range2);
+            align.push_back(range3);
+            align.push_back(range4);
+            saveAlignmentOutput(align, "gdt");
+            
+            
             vector <Spacer> spacers;
             Spacer newSet1 = superImpositor->getGdtset1_1();
             Spacer newSet2 = superImpositor->getGdtset1_2();
@@ -298,6 +310,13 @@ int main(int nArgs, char* argv[]) {
             }
             superImpositor->calculateTMScore(vectorSet);
 
+            std::vector<std::pair<int, int> > range;
+            range = superImpositor->getTMScoreAlignment();
+            vector < std::vector<std::pair<int, int> > > align;
+            align.push_back(range);
+            saveAlignmentOutput(align, "TMScore");
+            
+            
             vector <Spacer> spacers;
             Spacer newSet1 = superImpositor->getTMScoreset1();
             Spacer newSet2 = superImpositor->getTMScoreset2();
