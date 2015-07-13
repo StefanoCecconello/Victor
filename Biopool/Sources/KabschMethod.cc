@@ -19,79 +19,66 @@ KabschMethod::KabschMethod() {
  * @return Eigen::Affine3d*, the rototraslation returned by the method.
  */
 Eigen::Affine3d* KabschMethod::rotate(Eigen::Matrix3Xd set1Matrix, Eigen::Matrix3Xd set2Matrix) const{
-    Eigen::Affine3d* output = new Eigen::Affine3d();
+    Eigen::Affine3d* outputCoords = new Eigen::Affine3d();
     //Rotation Matrix
-    output->linear() = Eigen::Matrix3d::Identity(3, 3);
+    outputCoords->linear() = Eigen::Matrix3d::Identity(3, 3);
     //Translation Vector
-    output->translation() = Eigen::Vector3d::Zero();
+    outputCoords->translation() = Eigen::Vector3d::Zero();
 
-
-
-    //Questi sono i valori di ritorno, che includono la matrice di rotazione e il vettore di traslazione
-
-
-    //Controlla che i due set abbiano uguale lunghezza
+    //Check that the two set have the same length
     if (set1Matrix.cols() != set2Matrix.cols())
         throw "I due set devono presentare uguale lunghezza";
 
 
-    // Qui calcola le medie delle distanze e le sottrae poi per normalizzare i valori
-    // INIZIO
-    // First find the scale, by finding the ratio of sums of some distances,
-    // then bring the datasets to the same scale.
-    // Sta sottrendo le colonne a due a due
-    double dist_in = 0, dist_out = 0;
+    // Calculate the distance between the consecutive points in the matrix
+    double set1DistancesSum = 0, set2DistancesSum = 0;
     for (int col = 0; col < set1Matrix.cols() - 1; col++) {
-        dist_in += (set1Matrix.col(col + 1) - set1Matrix.col(col)).norm();
-        dist_out += (set2Matrix.col(col + 1) - set2Matrix.col(col)).norm();
+        set1DistancesSum += (set1Matrix.col(col + 1) - set1Matrix.col(col)).norm();
+        set2DistancesSum += (set2Matrix.col(col + 1) - set2Matrix.col(col)).norm();
     }
 
-    //Restituisce l'output cosi' come' se non vi e' nessuna rotazione o traslazione da compiere
-    if (dist_in <= 0 || dist_out <= 0)
-        return output;
+    //If all the point is equal simply return outputCoords
+    if (set1DistancesSum <= 0 || set2DistancesSum <= 0)
+        return outputCoords;
 
-    //double scale = dist_out / dist_in;
-    //set2Matrix /= scale;
 
-    // Find the centroids then shift to the origin
-    Eigen::Vector3d in_ctr = Eigen::Vector3d::Zero();
-    Eigen::Vector3d out_ctr = Eigen::Vector3d::Zero();
+    // Find the centroids and then shift to the origin
+    Eigen::Vector3d set1Centroids = Eigen::Vector3d::Zero();
+    Eigen::Vector3d set2Centroids = Eigen::Vector3d::Zero();
     for (int col = 0; col < set1Matrix.cols(); col++) {
-        in_ctr += set1Matrix.col(col);
-        out_ctr += set2Matrix.col(col);
+        set1Centroids += set1Matrix.col(col);
+        set2Centroids += set2Matrix.col(col);
     }
-    in_ctr /= set1Matrix.cols();
-    out_ctr /= set2Matrix.cols();
+    set1Centroids /= set1Matrix.cols();
+    set2Centroids /= set2Matrix.cols();
     for (int col = 0; col < set1Matrix.cols(); col++) {
-        set1Matrix.col(col) -= in_ctr;
-        set2Matrix.col(col) -= out_ctr;
+        set1Matrix.col(col) -= set1Centroids;
+        set2Matrix.col(col) -= set2Centroids;
     }
     //FINE
 
-    // Calcolo della scomposizone svd
+    // Calculate svd decomposition
     Eigen::MatrixXd Cov = set1Matrix * set2Matrix.transpose();
-    // Compie un tipo di svd computazionalmente piu' efficente di quella teorica
+    // Modification of the matrix for a more efficient
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(Cov, Eigen::ComputeThinU | Eigen::ComputeThinV);
 
-    // Trova il verso in cui rotare per ottenere una rotazione destrorsa
-    double d = (svd.matrixV() * svd.matrixU().transpose()).determinant();
-    if (d > 0)
-        d = 1.0;
+    // Define the direction of rotation
+    double direction = (svd.matrixV() * svd.matrixU().transpose()).determinant();
+    if (direction > 0)
+        direction = 1.0;
     else
-        d = -1.0;
-    //Genera la matrice I necessaria per trovare la rotazione
+        direction = -1.0;
     Eigen::Matrix3d I = Eigen::Matrix3d::Identity(3, 3);
-    //Cambia, se necessario, l'ultimo valore per ottenere una rotazione verso destra
-    I(2, 2) = d;
+    //Change the last value of rotation matrix to use the correct direction of rotation
+    I(2, 2) = direction;
+    
+    //Calculation of the rotation matrix
     Eigen::Matrix3d rotationMatrix = svd.matrixV() * I * svd.matrixU().transpose();
-
-    //Ritorna la matrice di rotazione e il vettore di traslazione trovati
-    //output->linear() = scale * rotationMatrix;
-    output->linear() = rotationMatrix;
-    //Il vettore si calcola facendo la differenza tra il primo set rotato e il secondo
-
-    //output->translation() = scale * (out_ctr - rotationMatrix * in_ctr);
-    output->translation() = out_ctr - rotationMatrix * in_ctr;
-    return output;
+    outputCoords->linear() = rotationMatrix;
+    
+    //The translation is calculate has the distance between the centroids of the
+    //second set and the first rototrasled
+    outputCoords->translation() = set2Centroids - rotationMatrix * set1Centroids;
+    return outputCoords;
 }
 
